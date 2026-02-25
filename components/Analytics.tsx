@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from './ui/Card';
 import { ViewProps } from '../types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const MaterialIcon = ({ name, className }: { name: string, className?: string }) => (
   <span className={`material-symbols-outlined ${className}`}>{name}</span>
@@ -15,6 +15,8 @@ const engagementData = [
   { name: 'May', fb: 1890, ig: 4800, tt: 2181 },
   { name: 'Jun', fb: 2390, ig: 3800, tt: 2500 },
 ];
+
+const ignore = [];
 
 const ageData = [
   { name: '18-24', value: 400 },
@@ -85,7 +87,7 @@ export const Analytics: React.FC<ViewProps> = () => {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {ageData.map((entry, index) => (
+                  {ageData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
