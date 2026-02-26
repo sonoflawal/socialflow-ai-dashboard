@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import { ViewProps } from '../types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { AudienceWealthDashboard } from './analytics/AudienceWealthDashboard';
 
 const MaterialIcon = ({ name, className }: { name: string, className?: string }) => (
   <span className={`material-symbols-outlined ${className}`}>{name}</span>
@@ -26,15 +27,45 @@ const ageData = [
 const COLORS = ['#3b82f6', '#14b8a6', '#a855f7', '#fb923c'];
 
 export const Analytics: React.FC<ViewProps> = () => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'wealth'>('overview');
+
   const handleExport = () => {
     console.log("Downloading report as PDF...");
     alert("Downloading report as PDF... (Check console for details)");
   };
 
+  if (activeTab === 'wealth') {
+    return <AudienceWealthDashboard />;
+  }
+
   return (
     <div className="p-7 space-y-7 animate-fade-in">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Detailed Analytics</h2>
+        <div className="flex items-center gap-6">
+          <h2 className="text-2xl font-bold text-white">Detailed Analytics</h2>
+          <div className="flex gap-2 bg-dark-surface rounded-2xl p-1">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                activeTab === 'overview' 
+                  ? 'bg-primary-blue text-white' 
+                  : 'text-gray-subtext hover:text-white'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('wealth')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                activeTab === 'wealth' 
+                  ? 'bg-primary-blue text-white' 
+                  : 'text-gray-subtext hover:text-white'
+              }`}
+            >
+              Audience Wealth
+            </button>
+          </div>
+        </div>
         <div className="flex gap-4">
            <button 
              onClick={handleExport}
