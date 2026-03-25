@@ -1,6 +1,7 @@
 import app from './app';
 import { getBackendPort } from './config/runtime';
 import { startDataPruningJob, stopDataPruningJob } from './jobs/dataPruningJob';
+import { startYouTubeSyncJob, stopYouTubeSyncJob } from './jobs/youtubeSyncJob';
 import { startWorkerMonitor, stopWorkerMonitor } from './monitoring/workerMonitorInstance';
 import { createLogger } from './lib/logger';
 import { prisma } from './lib/prisma';
@@ -64,6 +65,16 @@ const gracefulShutdown = async (signal: string, exitCode: number = 0): Promise<v
       logger.info('Data pruning job stopped');
     } catch (error) {
       logger.error('Failed to stop data pruning job', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    // Stop YouTube sync job
+    try {
+      await stopYouTubeSyncJob();
+      logger.info('YouTube sync job stopped');
+    } catch (error) {
+      logger.error('Failed to stop YouTube sync job', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -156,6 +167,16 @@ const bootstrap = async (): Promise<void> => {
       logger.info('Data pruning job started');
     } catch (error) {
       logger.error('Failed to start data pruning job', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    // Start YouTube analytics sync job
+    try {
+      await startYouTubeSyncJob();
+      logger.info('YouTube analytics sync job started');
+    } catch (error) {
+      logger.error('Failed to start YouTube sync job', {
         error: error instanceof Error ? error.message : String(error),
       });
     }

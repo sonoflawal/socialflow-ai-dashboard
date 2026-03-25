@@ -32,11 +32,8 @@ app.get('/health', (req, res) => {
 // app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
 
-import billingRoutes from './routes/billing';
-
-// Stripe webhook requires raw body — mount before the global JSON parser scope
-app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
-app.use('/api/billing', billingRoutes);
+import youtubeRoutes from './routes/youtube';
+app.use('/api/youtube', youtubeRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
