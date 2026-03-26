@@ -43,6 +43,9 @@ app.use('/api/youtube', youtubeRoutes);
 import facebookRoutes from './routes/facebook';
 app.use('/api/facebook', facebookRoutes);
 
+import tiktokRoutes from './routes/tiktok';
+app.use('/api/tiktok', tiktokRoutes);
+
 import exportsRoutes from './routes/exports';
 app.use('/api/exports', exportsRoutes);
 

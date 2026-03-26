@@ -131,6 +131,17 @@ export const CIRCUIT_CONFIGS = {
     volumeThreshold: 3,
     name: "instagram-service",
   } as CircuitBreakerConfig,
+
+  // TikTok Content Posting API — lenient for chunked video uploads
+  tiktok: {
+    timeout: 60000, // 60 seconds (chunked video uploads can be slow)
+    errorThresholdPercentage: 50,
+    resetTimeout: 60000, // 1 minute cooldown
+    rollingCountTimeout: 30000,
+    rollingCountBuckets: 10,
+    volumeThreshold: 3,
+    name: "tiktok-service",
+  } as CircuitBreakerConfig,
 };
 
 /**
@@ -169,5 +180,9 @@ export const FALLBACK_STRATEGIES = {
   instagram: {
     enabled: false,
     message: "Instagram API unavailable. Please try again later.",
+  },
+  tiktok: {
+    enabled: false,
+    message: "TikTok API unavailable. Please try again later.",
   },
 };

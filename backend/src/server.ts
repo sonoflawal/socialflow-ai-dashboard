@@ -5,6 +5,7 @@ import { queueManager } from './queues/queueManager';
 import { getBackendPort } from './config/runtime';
 import { startDataPruningJob, stopDataPruningJob } from './jobs/dataPruningJob';
 import { startYouTubeSyncJob, stopYouTubeSyncJob } from './jobs/youtubeSyncJob';
+import { startTikTokVideoWorker } from './jobs/tiktokVideoJob';
 import { startWorkerMonitor, stopWorkerMonitor } from './monitoring/workerMonitorInstance';
 import { startHealthMonitoringJob, stopHealthMonitoringJob } from './jobs/healthMonitoringJob';
 import { initializeHealthMonitoring } from './monitoring/healthMonitoringInstance';
@@ -239,6 +240,16 @@ const bootstrap = async (): Promise<void> => {
       logger.info('YouTube analytics sync job started');
     } catch (error) {
       logger.error('Failed to start YouTube sync job', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    // Start TikTok video upload worker
+    try {
+      startTikTokVideoWorker();
+      logger.info('TikTok video worker started');
+    } catch (error) {
+      logger.error('Failed to start TikTok video worker', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
