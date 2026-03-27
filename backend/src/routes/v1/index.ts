@@ -28,6 +28,7 @@ import videoRoutes        from '../video';
 import webhookRoutes      from '../webhooks';
 import twitterWebhookRoutes from '../twitter-webhook';
 import youtubeRoutes      from '../youtube';
+import linkedInRoutes     from '../linkedin';
 
 const router = Router();
 
@@ -75,5 +76,6 @@ router.use('/webhooks',      generalLimiter, webhookRoutes);
 // Twitter Account Activity API — no auth middleware, secured via HMAC signature
 router.use('/webhooks/twitter', twitterWebhookRoutes);
 router.use('/youtube',       generalLimiter, youtubeRoutes);
+router.use('/linkedin',      generalLimiter, linkedInRoutes);
 
 export default router;

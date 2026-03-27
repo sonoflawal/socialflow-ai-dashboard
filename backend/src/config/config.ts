@@ -45,6 +45,10 @@ const envSchema = z.object({
 
   INSTAGRAM_REDIRECT_URI: z.string().optional(),
 
+  LINKEDIN_CLIENT_ID: z.string().optional(),
+  LINKEDIN_CLIENT_SECRET: z.string().optional(),
+  LINKEDIN_REDIRECT_URI: z.string().optional(),
+
   // ── AI / Translation ──────────────────────────────────────────────────────
   DEEPL_API_KEY: z.string().optional(),
   GOOGLE_TRANSLATE_API_KEY: z.string().optional(),
