@@ -17,6 +17,7 @@ import { createLogger } from './lib/logger';
 import { prisma } from './lib/prisma';
 import { Worker } from 'bullmq';
 import { Server } from 'http';
+import { initSearchIndex } from './services/SearchService';
 
 const logger = createLogger('server');
 const PORT = config.BACKEND_PORT;
@@ -275,6 +276,15 @@ const bootstrap = async (): Promise<void> => {
       logger.info('Twitter webhook worker started');
     } catch (error) {
       logger.error('Failed to start Twitter webhook worker', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    // Initialise Meilisearch index
+    try {
+      await initSearchIndex();
+    } catch (error) {
+      logger.error('Failed to initialise Meilisearch index', {
         error: error instanceof Error ? error.message : String(error),
       });
     }

@@ -5,6 +5,7 @@ import { AuthRequest } from '../middleware/authMiddleware';
 import { ModerationService } from '../services/ModerationService';
 import { BadRequestError } from '../lib/errors';
 import { createLogger } from '../lib/logger';
+import { indexPost } from '../services/SearchService';
 
 const logger = createLogger('post-controller');
 
@@ -42,6 +43,16 @@ export async function createPost(req: AuthRequest, res: Response, next: NextFunc
         platform,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       },
+    });
+
+    // Fire-and-forget — don't block the response on indexing
+    indexPost({
+      id: post.id,
+      organizationId: post.organizationId,
+      content: post.content,
+      platform: post.platform,
+      scheduledAt: post.scheduledAt?.toISOString() ?? null,
+      createdAt: post.createdAt.toISOString(),
     });
 
     res.status(201).json({

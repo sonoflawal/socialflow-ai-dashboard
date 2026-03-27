@@ -105,6 +105,11 @@ const envSchema = z.object({
 
   // ── Webhooks ──────────────────────────────────────────────────────────────
   HMAC_TIMESTAMP_TOLERANCE_MS: z.coerce.number().default(300000),
+
+  // ── Meilisearch ───────────────────────────────────────────────────────────
+  MEILISEARCH_HOST: z.string().default('http://localhost:7700'),
+  MEILISEARCH_ADMIN_KEY: z.string().optional(),
+  MEILISEARCH_SEARCH_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
