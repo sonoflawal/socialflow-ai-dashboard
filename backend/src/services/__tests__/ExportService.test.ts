@@ -33,16 +33,13 @@ describe('ExportService', () => {
         'org-123',
         new Date('2025-01-01'),
         new Date('2025-12-31'),
-        mockRes as Response
+        mockRes as Response,
       );
 
-      expect(mockRes.setHeader).toHaveBeenCalledWith(
-        'Content-Type',
-        'text/csv; charset=utf-8'
-      );
+      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv; charset=utf-8');
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'Content-Disposition',
-        'attachment; filename="analytics.csv"'
+        'attachment; filename="analytics.csv"',
       );
     });
 
@@ -52,12 +49,7 @@ describe('ExportService', () => {
       const startDate = new Date('2025-01-01');
       const endDate = new Date('2025-12-31');
 
-      await ExportService.streamAnalyticsAsCSV(
-        'org-123',
-        startDate,
-        endDate,
-        mockRes as Response
-      );
+      await ExportService.streamAnalyticsAsCSV('org-123', startDate, endDate, mockRes as Response);
 
       expect(prisma.analyticsEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -68,7 +60,7 @@ describe('ExportService', () => {
               lte: endDate,
             },
           }),
-        })
+        }),
       );
     });
 
@@ -90,7 +82,7 @@ describe('ExportService', () => {
         'org-123',
         new Date('2025-01-01'),
         new Date('2025-12-31'),
-        mockRes as Response
+        mockRes as Response,
       );
 
       // Should be called twice: first batch + second batch (empty)
@@ -102,7 +94,7 @@ describe('ExportService', () => {
         expect.objectContaining({
           cursor: { id: 'id-999' },
           skip: 1,
-        })
+        }),
       );
     });
   });
@@ -115,16 +107,16 @@ describe('ExportService', () => {
         'org-123',
         new Date('2025-01-01'),
         new Date('2025-12-31'),
-        mockRes as Response
+        mockRes as Response,
       );
 
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'Content-Type',
-        'application/x-ndjson; charset=utf-8'
+        'application/x-ndjson; charset=utf-8',
       );
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'Content-Disposition',
-        'attachment; filename="analytics.jsonl"'
+        'attachment; filename="analytics.jsonl"',
       );
     });
   });
@@ -137,16 +129,13 @@ describe('ExportService', () => {
         'org-123',
         new Date('2025-01-01'),
         new Date('2025-12-31'),
-        mockRes as Response
+        mockRes as Response,
       );
 
-      expect(mockRes.setHeader).toHaveBeenCalledWith(
-        'Content-Type',
-        'text/csv; charset=utf-8'
-      );
+      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv; charset=utf-8');
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'Content-Disposition',
-        'attachment; filename="posts.csv"'
+        'attachment; filename="posts.csv"',
       );
     });
 
@@ -162,15 +151,13 @@ describe('ExportService', () => {
         },
       ];
 
-      (prisma.post.findMany as jest.Mock)
-        .mockResolvedValueOnce(mockData)
-        .mockResolvedValueOnce([]);
+      (prisma.post.findMany as jest.Mock).mockResolvedValueOnce(mockData).mockResolvedValueOnce([]);
 
       await ExportService.streamPostsAsCSV(
         'org-123',
         new Date('2025-01-01'),
         new Date('2025-12-31'),
-        mockRes as Response
+        mockRes as Response,
       );
 
       // Verify the stream was created and piped
@@ -186,16 +173,16 @@ describe('ExportService', () => {
         'org-123',
         new Date('2025-01-01'),
         new Date('2025-12-31'),
-        mockRes as Response
+        mockRes as Response,
       );
 
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'Content-Type',
-        'application/x-ndjson; charset=utf-8'
+        'application/x-ndjson; charset=utf-8',
       );
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'Content-Disposition',
-        'attachment; filename="posts.jsonl"'
+        'attachment; filename="posts.jsonl"',
       );
     });
   });

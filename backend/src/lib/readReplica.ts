@@ -1,9 +1,9 @@
-import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import type { Prisma } from "@prisma/client";
-import { createLogger } from "./logger";
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { createLogger } from './logger';
 
-const logger = createLogger("read-replica");
+const logger = createLogger('read-replica');
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,14 +17,14 @@ export interface ReplicaConfig {
 
 // Actions that are safe to route to a read replica
 const READ_ACTIONS = new Set([
-  "findUnique",
-  "findUniqueOrThrow",
-  "findFirst",
-  "findFirstOrThrow",
-  "findMany",
-  "count",
-  "aggregate",
-  "groupBy",
+  'findUnique',
+  'findUniqueOrThrow',
+  'findFirst',
+  'findFirstOrThrow',
+  'findMany',
+  'count',
+  'aggregate',
+  'groupBy',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -35,10 +35,7 @@ const READ_ACTIONS = new Set([
  * Picks a replica URL using weighted random selection.
  * Falls back to the primary URL if no replicas are configured.
  */
-function pickReplica(
-  replicas: Required<ReplicaConfig>[],
-  primaryUrl: string,
-): string {
+function pickReplica(replicas: Required<ReplicaConfig>[], primaryUrl: string): string {
   if (!replicas.length) return primaryUrl;
 
   const total = replicas.reduce((sum, r) => sum + r.weight, 0);
@@ -78,15 +75,15 @@ function getReplicaClient(url: string): PrismaClient {
 // ---------------------------------------------------------------------------
 
 function parseReplicaConfigs(): Required<ReplicaConfig>[] {
-  const urls = (process.env.DATABASE_REPLICA_URLS ?? "")
-    .split(",")
+  const urls = (process.env.DATABASE_REPLICA_URLS ?? '')
+    .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 
   if (!urls.length) return [];
 
-  const weights = (process.env.DATABASE_REPLICA_WEIGHTS ?? "")
-    .split(",")
+  const weights = (process.env.DATABASE_REPLICA_WEIGHTS ?? '')
+    .split(',')
     .map((s) => parseFloat(s.trim()))
     .filter((n) => !isNaN(n));
 
@@ -114,12 +111,12 @@ export function applyReadWriteSplitting(primary: PrismaClient): void {
   const replicas = parseReplicaConfigs();
 
   if (!replicas.length) {
-    logger.info("No replicas configured — all queries routed to primary");
+    logger.info('No replicas configured — all queries routed to primary');
     return;
   }
 
-  const primaryUrl = process.env.DATABASE_URL ?? "";
-  logger.info("Read/write splitting enabled", {
+  const primaryUrl = process.env.DATABASE_URL ?? '';
+  logger.info('Read/write splitting enabled', {
     replicaCount: replicas.length,
     replicas: replicas.map((r) => ({
       url: redactUrl(r.url),
@@ -133,8 +130,7 @@ export function applyReadWriteSplitting(primary: PrismaClient): void {
       next: (params: Prisma.MiddlewareParams) => Promise<unknown>,
     ) => {
       // Allow callers to force primary for read-your-writes consistency
-      const forcePrimary =
-        (params.args as Record<string, unknown>)?.__primaryRead === true;
+      const forcePrimary = (params.args as Record<string, unknown>)?.__primaryRead === true;
       if (forcePrimary && params.args) {
         delete (params.args as Record<string, unknown>).__primaryRead;
       }
@@ -150,7 +146,7 @@ export function applyReadWriteSplitting(primary: PrismaClient): void {
           ][params.action](params.args);
         } catch (err) {
           // Fallback to primary on replica failure
-          logger.warn("Replica query failed, falling back to primary", {
+          logger.warn('Replica query failed, falling back to primary', {
             model: params.model,
             action: params.action,
             error: (err as Error).message,
@@ -173,18 +169,16 @@ export function applyReadWriteSplitting(primary: PrismaClient): void {
 function redactUrl(url: string): string {
   try {
     const parsed = new URL(url);
-    if (parsed.password) parsed.password = "***";
+    if (parsed.password) parsed.password = '***';
     return parsed.toString();
   } catch {
-    return "[invalid url]";
+    return '[invalid url]';
   }
 }
 
 /** Gracefully disconnect all replica clients (call on app shutdown) */
 export async function disconnectReplicas(): Promise<void> {
-  await Promise.all(
-    Array.from(replicaPool.values()).map((c) => c.$disconnect()),
-  );
+  await Promise.all(Array.from(replicaPool.values()).map((c) => c.$disconnect()));
   replicaPool.clear();
-  logger.info("Replica connections closed");
+  logger.info('Replica connections closed');
 }

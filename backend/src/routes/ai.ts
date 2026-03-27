@@ -15,22 +15,27 @@ const router = Router();
  *   mimeType    {string}  MIME type, e.g. "image/jpeg" (optional, default: "image/jpeg")
  *   context     {string}  Optional prompt context to guide caption style/topic
  */
-router.post('/analyze-image', authMiddleware, requireCredits('ai:generate'), async (req: Request, res: Response) => {
-  const { imageData, mimeType, context } = req.body;
+router.post(
+  '/analyze-image',
+  authMiddleware,
+  requireCredits('ai:generate'),
+  async (req: Request, res: Response) => {
+    const { imageData, mimeType, context } = req.body;
 
-  if (!imageData) {
-    return res.status(400).json({ error: 'imageData is required.' });
-  }
-
-  try {
-    const caption = await analyzeImage(imageData, mimeType, context);
-    return res.json({ caption });
-  } catch (error) {
-    if (error instanceof GeminiServiceError) {
-      return res.status(422).json({ error: error.message, code: error.code });
+    if (!imageData) {
+      return res.status(400).json({ error: 'imageData is required.' });
     }
-    return res.status(500).json({ error: 'Internal server error.' });
-  }
-});
+
+    try {
+      const caption = await analyzeImage(imageData, mimeType, context);
+      return res.json({ caption });
+    } catch (error) {
+      if (error instanceof GeminiServiceError) {
+        return res.status(422).json({ error: error.message, code: error.code });
+      }
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+  },
+);
 
 export default router;

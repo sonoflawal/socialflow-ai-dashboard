@@ -32,7 +32,7 @@ export function startWebhookWorker(): Worker<WebhookJobData> {
       const { deliveryId, url, secret, payload, attempt } = job.data;
       await attemptDelivery(deliveryId, url, secret, payload, attempt);
     },
-    { connection, concurrency: 10 }
+    { connection, concurrency: 10 },
   );
 
   worker.on('failed', (job, err) => {

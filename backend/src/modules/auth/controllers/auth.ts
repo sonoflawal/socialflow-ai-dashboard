@@ -7,10 +7,18 @@ import { auditLogger } from '../services/AuditLogger';
 
 const SALT_ROUNDS = 12;
 
-function jwtSecret() { return process.env.JWT_SECRET ?? 'change-me-in-production'; }
-function jwtExpiresIn() { return process.env.JWT_EXPIRES_IN ?? '15m'; }
-function jwtRefreshSecret() { return process.env.JWT_REFRESH_SECRET ?? 'refresh-change-me-in-production'; }
-function jwtRefreshExpiresIn() { return process.env.JWT_REFRESH_EXPIRES_IN ?? '7d'; }
+function jwtSecret() {
+  return process.env.JWT_SECRET ?? 'change-me-in-production';
+}
+function jwtExpiresIn() {
+  return process.env.JWT_EXPIRES_IN ?? '15m';
+}
+function jwtRefreshSecret() {
+  return process.env.JWT_REFRESH_SECRET ?? 'refresh-change-me-in-production';
+}
+function jwtRefreshExpiresIn() {
+  return process.env.JWT_REFRESH_EXPIRES_IN ?? '7d';
+}
 
 function signAccess(userId: string): string {
   return jwt.sign({ sub: userId }, jwtSecret(), { expiresIn: jwtExpiresIn() } as jwt.SignOptions);
@@ -43,7 +51,12 @@ export async function register(req: Request, res: Response): Promise<void> {
   const refreshToken = signRefresh(user.id);
   UserStore.update(user.id, { refreshTokens: [refreshToken] });
 
-  auditLogger.log({ actorId: user.id, action: 'auth:register', ip: req.ip, userAgent: req.headers['user-agent'] });
+  auditLogger.log({
+    actorId: user.id,
+    action: 'auth:register',
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+  });
   res.status(201).json({ accessToken, refreshToken });
 }
 
@@ -60,7 +73,12 @@ export async function login(req: Request, res: Response): Promise<void> {
   const refreshToken = signRefresh(user.id);
   UserStore.update(user.id, { refreshTokens: [...user.refreshTokens, refreshToken] });
 
-  auditLogger.log({ actorId: user.id, action: 'auth:login', ip: req.ip, userAgent: req.headers['user-agent'] });
+  auditLogger.log({
+    actorId: user.id,
+    action: 'auth:login',
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+  });
   res.json({ accessToken, refreshToken });
 }
 
@@ -106,7 +124,12 @@ export function logout(req: Request, res: Response): void {
     UserStore.update(user.id, {
       refreshTokens: user.refreshTokens.filter((t) => t !== refreshToken),
     });
-    auditLogger.log({ actorId: user.id, action: 'auth:logout', ip: req.ip, userAgent: req.headers['user-agent'] });
+    auditLogger.log({
+      actorId: user.id,
+      action: 'auth:logout',
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
   }
 
   res.status(204).send();

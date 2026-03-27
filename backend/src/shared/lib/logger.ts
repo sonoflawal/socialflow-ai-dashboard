@@ -9,21 +9,21 @@ const winstonLogger = winston.createLogger({
   format: isProduction
     ? winston.format.json() // JSON format for production (cloud-ready)
     : winston.format.combine(
-      winston.format.colorize(),
-      winston.format.timestamp(),
-      winston.format.printf(({ timestamp, level, message, scope, requestId, ...meta }) => {
-        const reqIdStr = requestId ? ` [${requestId}]` : '';
-        const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-        return `${timestamp} [${scope || 'app'}]${reqIdStr} ${level}: ${message}${metaStr}`;
-      })
-    ),
+        winston.format.colorize(),
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message, scope, requestId, ...meta }) => {
+          const reqIdStr = requestId ? ` [${requestId}]` : '';
+          const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+          return `${timestamp} [${scope || 'app'}]${reqIdStr} ${level}: ${message}${metaStr}`;
+        }),
+      ),
   transports: [
     new winston.transports.Console(),
     ...(isProduction
       ? [
-        new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'logs/combined.log' }),
-      ]
+          new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+          new winston.transports.File({ filename: 'logs/combined.log' }),
+        ]
       : []),
   ],
 });

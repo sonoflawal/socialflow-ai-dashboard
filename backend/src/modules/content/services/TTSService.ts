@@ -64,9 +64,7 @@ class TTSService {
   }
 
   getVoices(provider?: TTSProvider): TTSVoice[] {
-    return provider
-      ? ttsConfig.voices.filter((v) => v.provider === provider)
-      : ttsConfig.voices;
+    return provider ? ttsConfig.voices.filter((v) => v.provider === provider) : ttsConfig.voices;
   }
 
   async cancelJob(jobId: string): Promise<boolean> {
@@ -113,7 +111,7 @@ class TTSService {
     const mergedAudioPath = path.join(outputDir, 'narration.mp3');
     await audioMerger.mergeAudioFiles(
       segmentResults.map((s) => s.audioPath),
-      mergedAudioPath
+      mergedAudioPath,
     );
     job.outputAudioPath = mergedAudioPath;
     this.updateProgress(jobId, job.request.videoPath ? 80 : 95);
@@ -124,7 +122,7 @@ class TTSService {
       await audioMerger.mergeAudioIntoVideo(
         job.request.videoPath,
         mergedAudioPath,
-        outputVideoPath
+        outputVideoPath,
       );
       job.outputVideoPath = outputVideoPath;
     }
@@ -138,7 +136,7 @@ class TTSService {
   private async synthesiseSegment(
     segment: TTSSegment,
     outputPath: string,
-    provider: TTSProvider
+    provider: TTSProvider,
   ): Promise<number> {
     if (provider === 'elevenlabs') {
       return this.synthesiseElevenLabs(segment, outputPath);
@@ -228,7 +226,10 @@ class TTSService {
     // Auto-select based on available keys
     if (process.env.ELEVENLABS_API_KEY) return 'elevenlabs';
     if (process.env.GOOGLE_TTS_API_KEY) return 'google';
-    throw new ExternalServiceError('No TTS provider configured. Set ELEVENLABS_API_KEY or GOOGLE_TTS_API_KEY.', 'tts');
+    throw new ExternalServiceError(
+      'No TTS provider configured. Set ELEVENLABS_API_KEY or GOOGLE_TTS_API_KEY.',
+      'tts',
+    );
   }
 
   private updateStatus(jobId: string, status: TTSJobStatus, error?: string): void {

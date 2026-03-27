@@ -1,5 +1,4 @@
 import { Router, Request, Response } from 'express';
-import { queueManager } from '../queues/queueManager';
 import { jobMonitor, JobStatus } from '../services/jobMonitor';
 
 const router = Router();
@@ -40,7 +39,7 @@ router.get('/jobs/:queue/stats', async (req: Request, res: Response) => {
   try {
     const { queue } = req.params;
     const stats = await jobMonitor.getQueueStats(queue);
-    
+
     if (!stats) {
       return res.status(404).json({ error: 'Queue not found' });
     }
@@ -79,7 +78,7 @@ router.get('/jobs/:queue/jobs/:jobId', async (req: Request, res: Response) => {
   try {
     const { queue, jobId } = req.params;
     const job = await jobMonitor.getJob(queue, jobId);
-    
+
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
     }
@@ -117,7 +116,7 @@ router.post('/jobs/:queue/jobs/:jobId/retry', async (req: Request, res: Response
   try {
     const { queue, jobId } = req.params;
     const success = await jobMonitor.retryJob(queue, jobId);
-    
+
     if (!success) {
       return res.status(400).json({ error: 'Failed to retry job' });
     }
@@ -137,7 +136,7 @@ router.post('/jobs/:queue/retry-all', async (req: Request, res: Response) => {
   try {
     const { queue } = req.params;
     const retried = await jobMonitor.retryAllFailed(queue);
-    
+
     res.json({ success: true, retried, message: `${retried} jobs retried` });
   } catch (error: any) {
     console.error('Error retrying all failed jobs:', error);
@@ -153,7 +152,7 @@ router.delete('/jobs/:queue/jobs/:jobId', async (req: Request, res: Response) =>
   try {
     const { queue, jobId } = req.params;
     const success = await jobMonitor.removeJob(queue, jobId);
-    
+
     if (!success) {
       return res.status(400).json({ error: 'Failed to remove job' });
     }
@@ -173,7 +172,7 @@ router.post('/jobs/:queue/pause', async (req: Request, res: Response) => {
   try {
     const { queue } = req.params;
     const success = await jobMonitor.pauseQueue(queue);
-    
+
     if (!success) {
       return res.status(400).json({ error: 'Failed to pause queue' });
     }
@@ -193,7 +192,7 @@ router.post('/jobs/:queue/resume', async (req: Request, res: Response) => {
   try {
     const { queue } = req.params;
     const success = await jobMonitor.resumeQueue(queue);
-    
+
     if (!success) {
       return res.status(400).json({ error: 'Failed to resume queue' });
     }
@@ -213,7 +212,7 @@ router.delete('/jobs/:queue/clear', async (req: Request, res: Response) => {
   try {
     const { queue } = req.params;
     const success = await jobMonitor.clearQueue(queue);
-    
+
     if (!success) {
       return res.status(400).json({ error: 'Failed to clear queue' });
     }

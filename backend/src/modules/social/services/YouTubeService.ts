@@ -39,7 +39,8 @@ class YouTubeService {
   constructor() {
     this.clientId = process.env.YOUTUBE_CLIENT_ID || '';
     this.clientSecret = process.env.YOUTUBE_CLIENT_SECRET || '';
-    this.redirectUri = process.env.YOUTUBE_REDIRECT_URI || 'http://localhost:3000/api/youtube/callback';
+    this.redirectUri =
+      process.env.YOUTUBE_REDIRECT_URI || 'http://localhost:3000/api/youtube/callback';
   }
 
   public isConfigured(): boolean {
@@ -78,7 +79,7 @@ class YouTubeService {
       throw new Error(`OAuth token exchange failed: ${JSON.stringify(err)}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -104,7 +105,7 @@ class YouTubeService {
       throw new Error(`Token refresh failed: ${JSON.stringify(err)}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       accessToken: data.access_token,
       refreshToken,
@@ -127,7 +128,7 @@ class YouTubeService {
 
         if (!response.ok) throw new Error(`YouTube API error: ${response.status}`);
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         const ch = data.items?.[0];
         if (!ch) throw new Error('No channel found for this account');
 
@@ -142,12 +143,15 @@ class YouTubeService {
       async () => {
         logger.warn('YouTube circuit breaker open, channel fetch skipped');
         throw new Error('YouTube API temporarily unavailable');
-      }
+      },
     );
   }
 
   /** Fetch statistics for a list of video IDs */
-  public async getVideoStats(accessToken: string, videoIds: string[]): Promise<YouTubeVideoStats[]> {
+  public async getVideoStats(
+    accessToken: string,
+    videoIds: string[],
+  ): Promise<YouTubeVideoStats[]> {
     if (!videoIds.length) return [];
 
     return circuitBreakerService.execute(
@@ -163,7 +167,7 @@ class YouTubeService {
 
         if (!response.ok) throw new Error(`YouTube API error: ${response.status}`);
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return (data.items ?? []).map((item: any) => ({
           videoId: item.id,
           title: item.snippet.title,
@@ -178,7 +182,7 @@ class YouTubeService {
       async () => {
         logger.warn('YouTube circuit breaker open, returning empty video stats');
         return [];
-      }
+      },
     );
   }
 
@@ -199,13 +203,13 @@ class YouTubeService {
 
         if (!response.ok) throw new Error(`YouTube API error: ${response.status}`);
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return (data.items ?? []).map((item: any) => item.id.videoId as string);
       },
       async () => {
         logger.warn('YouTube circuit breaker open, returning empty video list');
         return [];
-      }
+      },
     );
   }
 

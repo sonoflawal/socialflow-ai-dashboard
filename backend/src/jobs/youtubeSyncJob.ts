@@ -54,7 +54,7 @@ export const startYouTubeSyncJob = async (): Promise<void> => {
 
         return { synced: stats.length, timestamp: new Date().toISOString() };
       },
-      { connection: getRedisConnection() }
+      { connection: getRedisConnection() },
     );
 
     worker.on('completed', (job) => {
@@ -66,19 +66,29 @@ export const startYouTubeSyncJob = async (): Promise<void> => {
     });
   }
 
-  await queue.add(JOB_NAME, {}, {
-    repeat: { pattern: SYNC_CRON },
-    jobId: REPEAT_JOB_ID,
-    removeOnComplete: 50,
-    removeOnFail: 100,
-  });
+  await queue.add(
+    JOB_NAME,
+    {},
+    {
+      repeat: { pattern: SYNC_CRON },
+      jobId: REPEAT_JOB_ID,
+      removeOnComplete: 50,
+      removeOnFail: 100,
+    },
+  );
 
   logger.info('YouTube analytics sync job started', { cron: SYNC_CRON });
 };
 
 export const stopYouTubeSyncJob = async (): Promise<void> => {
-  if (worker) { await worker.close(); worker = null; }
-  if (queue) { await queue.close(); queue = null; }
+  if (worker) {
+    await worker.close();
+    worker = null;
+  }
+  if (queue) {
+    await queue.close();
+    queue = null;
+  }
   logger.info('YouTube analytics sync job stopped');
 };
 

@@ -1,17 +1,17 @@
-import { PrismaClient } from "@prisma/client";
-import { createLogger } from "../lib/logger";
+import { PrismaClient } from '@prisma/client';
+import { createLogger } from '../lib/logger';
 
 const prisma = new PrismaClient();
-const logger = createLogger("cohort-service");
+const logger = createLogger('cohort-service');
 
 export type CohortLabel =
-  | "Frequent Posters"
-  | "Occasional Posters"
-  | "Lurkers"
-  | "New Users"
-  | "Power Users"
-  | "At-Risk Users"
-  | "Churned Users";
+  | 'Frequent Posters'
+  | 'Occasional Posters'
+  | 'Lurkers'
+  | 'New Users'
+  | 'Power Users'
+  | 'At-Risk Users'
+  | 'Churned Users';
 
 export interface UserActivityStats {
   userId: string;
@@ -61,14 +61,14 @@ export class CohortService {
    * Uses raw SQL aggregation for performance.
    */
   async computeCohorts(organizationId?: string): Promise<CohortResult> {
-    const cacheKey = organizationId ?? "__global__";
+    const cacheKey = organizationId ?? '__global__';
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
-      logger.info("Returning cached cohort result", { cacheKey });
+      logger.info('Returning cached cohort result', { cacheKey });
       return cached.value;
     }
 
-    logger.info("Computing cohorts", { organizationId });
+    logger.info('Computing cohorts', { organizationId });
 
     const stats = await this.fetchActivityStats(organizationId);
     const segments = this.segmentUsers(stats);
@@ -84,7 +84,7 @@ export class CohortService {
       value: result,
       expiresAt: Date.now() + CACHE_TTL_MS,
     });
-    logger.info("Cohort computation complete", {
+    logger.info('Cohort computation complete', {
       totalUsers: stats.length,
       segments: segments.length,
     });
@@ -107,9 +107,9 @@ export class CohortService {
    * Invalidate cached results (call after batch job completes).
    */
   invalidateCache(organizationId?: string): void {
-    const key = organizationId ?? "__global__";
+    const key = organizationId ?? '__global__';
     this.cache.delete(key);
-    logger.info("Cache invalidated", { key });
+    logger.info('Cache invalidated', { key });
   }
 
   // ---------------------------------------------------------------------------
@@ -125,10 +125,8 @@ export class CohortService {
     userId?: string,
   ): Promise<UserActivityStats[]> {
     // Build optional WHERE clauses
-    const orgFilter = organizationId
-      ? `AND om.organization_id = '${organizationId}'`
-      : "";
-    const userFilter = userId ? `AND u.id = '${userId}'` : "";
+    const orgFilter = organizationId ? `AND om.organization_id = '${organizationId}'` : '';
+    const userFilter = userId ? `AND u.id = '${userId}'` : '';
 
     type RawRow = {
       user_id: string;
@@ -166,10 +164,7 @@ export class CohortService {
       postCount: Number(r.post_count),
       orgCount: Number(r.org_count),
       daysSinceJoined: Math.floor(r.days_since_joined),
-      daysSinceLastPost:
-        r.days_since_last_post != null
-          ? Math.floor(r.days_since_last_post)
-          : null,
+      daysSinceLastPost: r.days_since_last_post != null ? Math.floor(r.days_since_last_post) : null,
     }));
   }
 
@@ -186,16 +181,16 @@ export class CohortService {
    *   Lurkers          – 0 posts
    */
   private classifyUser(s: UserActivityStats): CohortLabel {
-    if (s.daysSinceJoined <= 7) return "New Users";
-    if (s.postCount === 0) return "Lurkers";
+    if (s.daysSinceJoined <= 7) return 'New Users';
+    if (s.postCount === 0) return 'Lurkers';
 
     const lastPost = s.daysSinceLastPost ?? Infinity;
 
-    if (s.postCount >= 30 && lastPost <= 7) return "Power Users";
-    if (s.postCount >= 10 && lastPost <= 14) return "Frequent Posters";
-    if (s.postCount >= 1 && lastPost <= 30) return "Occasional Posters";
-    if (lastPost > 90) return "Churned Users";
-    return "At-Risk Users";
+    if (s.postCount >= 30 && lastPost <= 7) return 'Power Users';
+    if (s.postCount >= 10 && lastPost <= 14) return 'Frequent Posters';
+    if (s.postCount >= 1 && lastPost <= 30) return 'Occasional Posters';
+    if (lastPost > 90) return 'Churned Users';
+    return 'At-Risk Users';
   }
 
   private segmentUsers(stats: UserActivityStats[]): CohortSegment[] {

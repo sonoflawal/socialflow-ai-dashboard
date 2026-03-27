@@ -24,9 +24,7 @@ async function buildStore() {
 // Shared handler — returns a consistent 429 JSON body
 // ---------------------------------------------------------------------------
 const handler = (_req: Request, res: Response): void => {
-  const retryAfter = Math.ceil(
-    Number(res.getHeader('Retry-After') ?? 60)
-  );
+  const retryAfter = Math.ceil(Number(res.getHeader('Retry-After') ?? 60));
 
   res.status(429).json({
     success: false,
@@ -50,8 +48,8 @@ function getStore() {
 async function createLimiter(overrides: Partial<Options>): Promise<RateLimitRequestHandler> {
   const store = await getStore();
   return rateLimit({
-    standardHeaders: true,   // RateLimit-* headers (RFC 6585)
-    legacyHeaders: false,     // disable X-RateLimit-* legacy headers
+    standardHeaders: true, // RateLimit-* headers (RFC 6585)
+    legacyHeaders: false, // disable X-RateLimit-* legacy headers
     handler,
     store,
     ...overrides,

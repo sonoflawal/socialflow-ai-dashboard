@@ -7,7 +7,11 @@ import { prisma } from '../lib/prisma';
  * Verifies the authenticated user is a member of that org.
  * Attaches `req.activeOrgId` for downstream use.
  */
-export async function orgMiddleware(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+export async function orgMiddleware(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   const orgId = req.headers['x-org-id'] as string | undefined;
   if (!orgId) {
     res.status(400).json({ message: 'Missing x-org-id header' });

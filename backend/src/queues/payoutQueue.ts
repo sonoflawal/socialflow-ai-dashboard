@@ -50,9 +50,12 @@ export async function processPayout(data: PayoutJobData): Promise<string | undef
 /**
  * Schedule a payout for a future date
  */
-export async function schedulePayout(data: PayoutJobData, scheduledFor: Date): Promise<string | undefined> {
+export async function schedulePayout(
+  data: PayoutJobData,
+  scheduledFor: Date,
+): Promise<string | undefined> {
   const delay = scheduledFor.getTime() - Date.now();
-  
+
   if (delay < 0) {
     throw new Error('Scheduled time must be in the future');
   }
@@ -70,7 +73,7 @@ export async function schedulePayout(data: PayoutJobData, scheduledFor: Date): P
 export async function scheduleRecurringPayout(data: ScheduledPayoutData): Promise<string[]> {
   const jobIds: string[] = [];
   const { scheduledFor, recurring } = data;
-  
+
   if (!recurring) {
     throw new Error('Recurring configuration is required');
   }
@@ -90,16 +93,19 @@ export async function scheduleRecurringPayout(data: ScheduledPayoutData): Promis
   // Generate jobs for the next year or until end date
   while (currentDate.getTime() < endDate.getTime()) {
     const delay = currentDate.getTime() - Date.now();
-    
+
     if (delay > 0) {
       const jobId = await queueManager.addJob(PAYOUT_QUEUE_NAME, 'process-payout', data, {
         priority: 2,
         delay,
-        repeat: recurring.frequency === 'daily' ? {
-          cron: `${currentDate.getMinutes()} ${currentDate.getHours()} * * *`,
-        } : undefined,
+        repeat:
+          recurring.frequency === 'daily'
+            ? {
+                cron: `${currentDate.getMinutes()} ${currentDate.getHours()} * * *`,
+              }
+            : undefined,
       });
-      
+
       if (jobId) {
         jobIds.push(jobId);
       }

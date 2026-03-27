@@ -46,7 +46,7 @@ describe('dispatchEvent', () => {
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ eventType: 'post.published', status: 'pending' }),
-      })
+      }),
     );
   });
 });
@@ -66,7 +66,7 @@ describe('attemptDelivery', () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'success', attempts: 1 }),
-      })
+      }),
     );
   });
 
@@ -79,7 +79,7 @@ describe('attemptDelivery', () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'pending', nextRetryAt: expect.any(Date) }),
-      })
+      }),
     );
   });
 
@@ -92,7 +92,7 @@ describe('attemptDelivery', () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'failed', nextRetryAt: null }),
-      })
+      }),
     );
   });
 
@@ -105,7 +105,7 @@ describe('attemptDelivery', () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'pending', errorMessage: 'ECONNREFUSED' }),
-      })
+      }),
     );
   });
 

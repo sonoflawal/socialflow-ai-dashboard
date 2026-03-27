@@ -158,8 +158,8 @@ export function verifySignature(options: VerifySignatureOptions) {
     }
 
     const signedPayload = `${rawTimestamp}.${rawBody.toString('utf8')}`;
-    const expected = `${algorithm}=` +
-      crypto.createHmac(algorithm, secret).update(signedPayload).digest('hex');
+    const expected =
+      `${algorithm}=` + crypto.createHmac(algorithm, secret).update(signedPayload).digest('hex');
 
     let signaturesMatch: boolean;
     try {

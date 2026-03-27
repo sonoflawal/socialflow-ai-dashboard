@@ -39,12 +39,12 @@ function parseRedisUrl(url: string): ConnectionOptions {
  */
 function createRedisConnection(): ConnectionOptions {
   const redisUrl = process.env.REDIS_URL;
-  
+
   if (redisUrl) {
     console.log('Using Redis connection from REDIS_URL');
     return parseRedisUrl(redisUrl);
   }
-  
+
   // Fallback to individual environment variables
   console.log('Using Redis connection from individual env vars (REDIS_HOST, REDIS_PORT)');
   return {
@@ -66,7 +66,7 @@ function createRedisConnection(): ConnectionOptions {
 const connection: ConnectionOptions = createRedisConnection();
 
 // Create ioredis instance for direct Redis operations if needed
-export const redisClient = process.env.REDIS_URL 
+export const redisClient = process.env.REDIS_URL
   ? new Redis(process.env.REDIS_URL)
   : new Redis({
       host: process.env.REDIS_HOST || 'localhost',
@@ -139,7 +139,7 @@ export class QueueManager {
   createWorker(
     name: string,
     processor: (job: any) => Promise<any>,
-    options: { concurrency?: number; limiter?: any } = {}
+    options: { concurrency?: number; limiter?: any } = {},
   ): Worker {
     if (this.workers.has(name)) {
       return this.workers.get(name)!;
@@ -235,7 +235,7 @@ export class QueueManager {
       delay?: number;
       repeat?: any;
       cron?: string;
-    }
+    },
   ): Promise<string | undefined> {
     const queue = this.queues.get(queueName);
     if (!queue) {
@@ -262,7 +262,7 @@ export class QueueManager {
       name: string;
       data: any;
       options?: { priority?: number; delay?: number };
-    }>
+    }>,
   ): Promise<string[]> {
     const queue = this.queues.get(queueName);
     if (!queue) {
@@ -389,19 +389,15 @@ export class QueueManager {
     console.log('Closing all queues and workers...');
 
     // Close all workers first
-    const workerClosePromises = Array.from(this.workers.values()).map((worker) =>
-      worker.close()
-    );
+    const workerClosePromises = Array.from(this.workers.values()).map((worker) => worker.close());
 
     // Close all queue events
     const eventsClosePromises = Array.from(this.queueEvents.values()).map((events) =>
-      events.close()
+      events.close(),
     );
 
     // Close all queues
-    const queueClosePromises = Array.from(this.queues.values()).map((queue) =>
-      queue.close()
-    );
+    const queueClosePromises = Array.from(this.queues.values()).map((queue) => queue.close());
 
     await Promise.all([...workerClosePromises, ...eventsClosePromises, ...queueClosePromises]);
 

@@ -14,7 +14,7 @@ export const PasswordHistoryService = {
     if (!user) return false;
 
     const daysSinceChange = Math.floor(
-      (Date.now() - user.lastPasswordChange.getTime()) / (1000 * 60 * 60 * 24)
+      (Date.now() - user.lastPasswordChange.getTime()) / (1000 * 60 * 60 * 24),
     );
     return daysSinceChange >= PASSWORD_ROTATION_DAYS;
   },

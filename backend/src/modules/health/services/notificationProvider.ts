@@ -119,8 +119,10 @@ export class NotificationManager {
   async sendAlert(alert: AlertPayload): Promise<void> {
     const promises = Array.from(this.providers.values()).map((provider) =>
       provider.send(alert).catch((error) => {
-        logger.error('Provider error', { error: error instanceof Error ? error.message : String(error) });
-      })
+        logger.error('Provider error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
     );
 
     await Promise.all(promises);

@@ -1,5 +1,4 @@
 import { queueManager } from '../queues/queueManager';
-import { QueueEvents } from 'bullmq';
 
 // Job status types
 export type JobStatus = 'waiting' | 'active' | 'completed' | 'failed' | 'delayed' | 'paused';
@@ -43,7 +42,7 @@ export interface SystemStats {
  * JobMonitor - Service for monitoring and managing job queues
  */
 export class JobMonitor {
-  private eventListeners: Map<string, Function[]> = new Map();
+  private eventListeners: Map<string, ((...args: unknown[]) => void)[]> = new Map();
 
   constructor() {
     this.setupGlobalListeners();
@@ -54,7 +53,7 @@ export class JobMonitor {
    */
   private setupGlobalListeners() {
     const queueNames = queueManager.getQueueNames();
-    
+
     queueNames.forEach((name) => {
       const events = queueManager.getQueueEvents(name);
       if (events) {
@@ -128,7 +127,7 @@ export class JobMonitor {
     queueName: string,
     status: JobStatus = 'waiting',
     start: number = 0,
-    end: number = 20
+    end: number = 20,
   ): Promise<JobInfo[]> {
     let jobs: any[] = [];
 
@@ -282,14 +281,14 @@ export class JobMonitor {
   /**
    * Event handling
    */
-  on(event: string, listener: Function): void {
+  on(event: string, listener: (...args: unknown[]) => void): void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
     this.eventListeners.get(event)!.push(listener);
   }
 
-  off(event: string, listener: Function): void {
+  off(event: string, listener: (...args: unknown[]) => void): void {
     const listeners = this.eventListeners.get(event);
     if (listeners) {
       const index = listeners.indexOf(listener);

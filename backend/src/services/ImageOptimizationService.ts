@@ -4,7 +4,8 @@ import path from 'path';
 import crypto from 'crypto';
 
 const CACHE_DIR = path.join(process.cwd(), 'uploads', 'images', 'cache');
-const SUPPORTED_FORMATS = ['jpeg', 'png', 'webp', 'gif'];
+// SUPPORTED_FORMATS reserved for future format validation
+const _SUPPORTED_FORMATS = ['jpeg', 'png', 'webp', 'gif'];
 
 interface OptimizationOptions {
   width?: number;
@@ -46,10 +47,7 @@ export const ImageOptimizationService = {
   /**
    * Optimize image to WebP with optional resizing
    */
-  optimizeToWebP: async (
-    inputPath: string,
-    options: OptimizationOptions = {}
-  ): Promise<Buffer> => {
+  optimizeToWebP: async (inputPath: string, options: OptimizationOptions = {}): Promise<Buffer> => {
     const { width, height, quality = 80 } = options;
 
     let transform = sharp(inputPath);
@@ -69,7 +67,7 @@ export const ImageOptimizationService = {
    */
   optimize: async (
     inputPath: string,
-    options: OptimizationOptions = {}
+    options: OptimizationOptions = {},
   ): Promise<{ buffer: Buffer; format: string; cacheKey: string }> => {
     const format = options.format || 'webp';
     const cacheKey = ImageOptimizationService.getCacheKey(inputPath, options);
@@ -127,16 +125,13 @@ export const ImageOptimizationService = {
    */
   optimizeBatch: async (
     inputPaths: string[],
-    options: OptimizationOptions = {}
+    options: OptimizationOptions = {},
   ): Promise<Array<{ path: string; buffer: Buffer; format: string }>> => {
     return Promise.all(
       inputPaths.map(async (inputPath) => {
-        const { buffer, format } = await ImageOptimizationService.optimize(
-          inputPath,
-          options
-        );
+        const { buffer, format } = await ImageOptimizationService.optimize(inputPath, options);
         return { path: inputPath, buffer, format };
-      })
+      }),
     );
   },
 
@@ -146,9 +141,7 @@ export const ImageOptimizationService = {
   clearCache: async (): Promise<void> => {
     try {
       const files = await fs.readdir(CACHE_DIR);
-      await Promise.all(
-        files.map((file) => fs.unlink(path.join(CACHE_DIR, file)))
-      );
+      await Promise.all(files.map((file) => fs.unlink(path.join(CACHE_DIR, file))));
     } catch (error) {
       console.error('Failed to clear cache:', error);
     }
@@ -164,7 +157,7 @@ export const ImageOptimizationService = {
         files.map(async (file) => {
           const stat = await fs.stat(path.join(CACHE_DIR, file));
           return stat.size;
-        })
+        }),
       );
       return sizes.reduce((a, b) => a + b, 0);
     } catch {

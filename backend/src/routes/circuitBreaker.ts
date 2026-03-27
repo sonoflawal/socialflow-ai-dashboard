@@ -125,9 +125,8 @@ router.get('/health', async (req: Request, res: Response) => {
       },
     };
 
-    const allHealthy = !health.ai.circuitOpen && 
-                       !health.twitter.circuitOpen && 
-                       !health.translation.circuitOpen;
+    const allHealthy =
+      !health.ai.circuitOpen && !health.twitter.circuitOpen && !health.translation.circuitOpen;
 
     res.status(allHealthy ? 200 : 503).json({
       success: allHealthy,

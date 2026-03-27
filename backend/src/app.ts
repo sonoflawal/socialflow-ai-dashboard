@@ -11,8 +11,9 @@ import authRoutes from './routes/auth';
 import aiRoutes from './routes/ai';
 import healthRoutes from './routes/health';
 import jobsRoutes from './routes/jobs';
-import webhookRoutes from './routes/webhooks';
-import realtimeRoutes from './routes/realtime';
+// webhookRoutes and realtimeRoutes imported for future use
+import './routes/webhooks';
+import './routes/realtime';
 import ttsRoutes from './routes/tts';
 import youtubeRoutes from './routes/youtube';
 import facebookRoutes from './routes/facebook';
@@ -48,7 +49,7 @@ app.use(morgan('combined'));
 // Health — no rate limiting (cheap, public)
 app.use('/api/health', healthRoutes);
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Auth — strict limiter (brute-force protection)

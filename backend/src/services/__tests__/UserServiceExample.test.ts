@@ -7,7 +7,7 @@ import { NotificationManager } from '../services/notificationProvider';
 
 /**
  * Example: Testing with InversifyJS DI
- * 
+ *
  * This demonstrates how to:
  * 1. Create a test container
  * 2. Mock dependencies
@@ -72,21 +72,19 @@ describe('UserServiceExample with DI', () => {
         overallStatus: 'unhealthy',
       });
 
-      const user = await userService.getUser('123');
+      const _user = await userService.getUser('123');
 
       expect(mockNotificationManager.sendAlert).toHaveBeenCalledWith(
         expect.objectContaining({
           severity: 'warning',
           service: 'user-service',
           message: expect.stringContaining('unhealthy'),
-        })
+        }),
       );
     });
 
     it('should handle errors gracefully', async () => {
-      mockHealthService.getSystemStatus.mockRejectedValueOnce(
-        new Error('Health check failed')
-      );
+      mockHealthService.getSystemStatus.mockRejectedValueOnce(new Error('Health check failed'));
 
       await expect(userService.getUser('123')).rejects.toThrow('Health check failed');
     });
@@ -113,7 +111,7 @@ describe('UserServiceExample with DI', () => {
           severity: 'warning',
           service: 'user-service',
           message: expect.stringContaining('jane@example.com'),
-        })
+        }),
       );
     });
   });
@@ -121,13 +119,13 @@ describe('UserServiceExample with DI', () => {
 
 /**
  * Key Testing Patterns:
- * 
+ *
  * 1. Create a new Container for each test
  * 2. Create mock implementations of dependencies
  * 3. Bind mocks using toConstantValue()
  * 4. Get the service from the container
  * 5. Test the service with mocked dependencies
- * 
+ *
  * Benefits:
  * - Easy to mock dependencies
  * - No need to modify service code for testing

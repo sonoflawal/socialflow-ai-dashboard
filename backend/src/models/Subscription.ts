@@ -58,8 +58,7 @@ const creditLogs: CreditLog[] = [];
 let logIdCounter = 0;
 
 export const SubscriptionStore = {
-  findByUserId: (userId: string): Subscription | undefined =>
-    subscriptions.get(userId),
+  findByUserId: (userId: string): Subscription | undefined => subscriptions.get(userId),
 
   findByStripeCustomerId: (customerId: string): Subscription | undefined =>
     [...subscriptions.values()].find((s) => s.stripeCustomerId === customerId),

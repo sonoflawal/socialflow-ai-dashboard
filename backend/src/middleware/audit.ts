@@ -13,7 +13,7 @@ import { AuditAction } from '../models/AuditLog';
 export function audit(
   action: AuditAction,
   resourceType?: string,
-  resourceId?: (req: AuthRequest) => string | undefined
+  resourceId?: (req: AuthRequest) => string | undefined,
 ) {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     res.on('finish', () => {

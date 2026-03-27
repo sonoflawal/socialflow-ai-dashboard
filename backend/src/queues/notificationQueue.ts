@@ -4,13 +4,7 @@ import { queueManager } from './queueManager';
 export const NOTIFICATION_QUEUE_NAME = 'notification';
 
 // Notification types
-export type NotificationType = 
-  | 'push' 
-  | 'sms' 
-  | 'in_app' 
-  | 'webhook' 
-  | 'slack' 
-  | 'discord';
+export type NotificationType = 'push' | 'sms' | 'in_app' | 'webhook' | 'slack' | 'discord';
 
 // Notification job data interfaces
 export interface NotificationJobData {
@@ -48,9 +42,14 @@ export const notificationQueue = queueManager.createQueue(NOTIFICATION_QUEUE_NAM
  */
 export async function sendNotification(data: NotificationJobData): Promise<string | undefined> {
   // Set priority based on metadata
-  const priority = data.metadata?.priority === 'urgent' ? 1 :
-                   data.metadata?.priority === 'high' ? 1 :
-                   data.metadata?.priority === 'low' ? 3 : 2;
+  const priority =
+    data.metadata?.priority === 'urgent'
+      ? 1
+      : data.metadata?.priority === 'high'
+        ? 1
+        : data.metadata?.priority === 'low'
+          ? 3
+          : 2;
 
   return await queueManager.addJob(NOTIFICATION_QUEUE_NAME, 'send-notification', data, {
     priority,
@@ -60,11 +59,18 @@ export async function sendNotification(data: NotificationJobData): Promise<strin
 /**
  * Send bulk notifications
  */
-export async function sendBulkNotifications(notifications: NotificationJobData[]): Promise<string[]> {
+export async function sendBulkNotifications(
+  notifications: NotificationJobData[],
+): Promise<string[]> {
   const jobs = notifications.map((notification) => {
-    const priority = notification.metadata?.priority === 'urgent' ? 1 :
-                     notification.metadata?.priority === 'high' ? 1 :
-                     notification.metadata?.priority === 'low' ? 3 : 2;
+    const priority =
+      notification.metadata?.priority === 'urgent'
+        ? 1
+        : notification.metadata?.priority === 'high'
+          ? 1
+          : notification.metadata?.priority === 'low'
+            ? 3
+            : 2;
 
     return {
       name: 'send-notification',
@@ -84,7 +90,7 @@ export async function sendPushNotification(
   title: string,
   message: string,
   data?: Record<string, any>,
-  metadata?: NotificationJobData['metadata']
+  metadata?: NotificationJobData['metadata'],
 ): Promise<string | undefined> {
   return await sendNotification({
     type: 'push',
@@ -102,7 +108,7 @@ export async function sendPushNotification(
 export async function sendSmsNotification(
   recipient: string,
   message: string,
-  metadata?: NotificationJobData['metadata']
+  metadata?: NotificationJobData['metadata'],
 ): Promise<string | undefined> {
   return await sendNotification({
     type: 'sms',
@@ -121,7 +127,7 @@ export async function sendInAppNotification(
   title: string,
   message: string,
   data?: Record<string, any>,
-  metadata?: NotificationJobData['metadata']
+  metadata?: NotificationJobData['metadata'],
 ): Promise<string | undefined> {
   return await sendNotification({
     type: 'in_app',
@@ -139,7 +145,7 @@ export async function sendInAppNotification(
 export async function sendWebhookNotification(
   url: string,
   payload: Record<string, any>,
-  metadata?: NotificationJobData['metadata']
+  metadata?: NotificationJobData['metadata'],
 ): Promise<string | undefined> {
   return await sendNotification({
     type: 'webhook',
@@ -157,7 +163,7 @@ export async function sendWebhookNotification(
 export async function sendSlackNotification(
   webhookUrl: string,
   message: string,
-  metadata?: NotificationJobData['metadata']
+  metadata?: NotificationJobData['metadata'],
 ): Promise<string | undefined> {
   return await sendNotification({
     type: 'slack',
@@ -174,7 +180,7 @@ export async function sendSlackNotification(
 export async function sendDiscordNotification(
   webhookUrl: string,
   message: string,
-  metadata?: NotificationJobData['metadata']
+  metadata?: NotificationJobData['metadata'],
 ): Promise<string | undefined> {
   return await sendNotification({
     type: 'discord',
@@ -190,10 +196,10 @@ export async function sendDiscordNotification(
  */
 export async function scheduleNotification(
   data: NotificationJobData,
-  scheduledFor: Date
+  scheduledFor: Date,
 ): Promise<string | undefined> {
   const delay = scheduledFor.getTime() - Date.now();
-  
+
   if (delay < 0) {
     throw new Error('Scheduled time must be in the future');
   }

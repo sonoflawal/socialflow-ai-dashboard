@@ -47,16 +47,17 @@ router.post('/upload', upload.single('image'), async (req: Request, res: Respons
       format: (format as 'webp' | 'jpeg' | 'png') || 'webp',
     };
 
-    const { buffer, format: resultFormat, cacheKey } = await ImageOptimizationService.optimize(
-      req.file.path,
-      options
-    );
+    const {
+      buffer,
+      format: resultFormat,
+      cacheKey,
+    } = await ImageOptimizationService.optimize(req.file.path, options);
 
     res.setHeader('Content-Type', `image/${resultFormat}`);
     res.setHeader('Cache-Control', 'public, max-age=31536000');
     res.setHeader('X-Cache-Key', cacheKey);
     res.send(buffer);
-  } catch (error) {
+  } catch (_error) {
     console.error('Image optimization error:', error);
     res.status(500).json({ error: 'Failed to optimize image' });
   }
@@ -90,16 +91,17 @@ router.get('/proxy', async (req: Request, res: Response) => {
       format: (format as 'webp' | 'jpeg' | 'png') || 'webp',
     };
 
-    const { buffer, format: resultFormat, cacheKey } = await ImageOptimizationService.optimize(
-      fullPath,
-      options
-    );
+    const {
+      buffer,
+      format: resultFormat,
+      cacheKey,
+    } = await ImageOptimizationService.optimize(fullPath, options);
 
     res.setHeader('Content-Type', `image/${resultFormat}`);
     res.setHeader('Cache-Control', 'public, max-age=31536000');
     res.setHeader('X-Cache-Key', cacheKey);
     res.send(buffer);
-  } catch (error) {
+  } catch (_error) {
     console.error('Image proxy error:', error);
     res.status(500).json({ error: 'Failed to proxy image' });
   }
@@ -113,7 +115,7 @@ router.get('/cache/size', async (req: Request, res: Response) => {
   try {
     const size = await ImageOptimizationService.getCacheSize();
     res.json({ cacheSize: size, cacheSizeMB: (size / 1024 / 1024).toFixed(2) });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Failed to get cache size' });
   }
 });
@@ -126,7 +128,7 @@ router.delete('/cache', async (req: Request, res: Response) => {
   try {
     await ImageOptimizationService.clearCache();
     res.json({ message: 'Cache cleared' });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Failed to clear cache' });
   }
 });

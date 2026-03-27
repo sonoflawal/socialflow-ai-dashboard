@@ -39,7 +39,7 @@ router.get(
   checkPermission('users:read'),
   (_req: Request, res: Response) => {
     return res.json(RoleStore.listAll());
-  }
+  },
 );
 
 /**
@@ -68,7 +68,7 @@ router.post(
     }
     RoleStore.assign(userId, role);
     return res.json({ userId, role });
-  }
+  },
 );
 
 /**
@@ -86,7 +86,7 @@ router.delete(
     }
     RoleStore.assign(userId, 'viewer');
     return res.status(204).send();
-  }
+  },
 );
 
 export default router;

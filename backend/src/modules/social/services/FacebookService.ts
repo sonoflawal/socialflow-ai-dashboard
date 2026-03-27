@@ -50,7 +50,8 @@ export interface FacebookComment {
 }
 
 const API_BASE = 'https://graph.facebook.com/v18.0';
-const OAUTH_TOKEN_URL = 'https://graph.facebook.com/v18.0/oauth/access_token';
+// OAUTH_TOKEN_URL reserved for future token exchange implementation
+const _OAUTH_TOKEN_URL = 'https://graph.facebook.com/v18.0/oauth/access_token';
 const FACEBOOK_AUTH_URL = 'https://www.facebook.com/v18.0/dialog/oauth';
 
 class FacebookService {
@@ -61,7 +62,8 @@ class FacebookService {
   constructor() {
     this.appId = process.env.FACEBOOK_APP_ID || '';
     this.appSecret = process.env.FACEBOOK_APP_SECRET || '';
-    this.redirectUri = process.env.FACEBOOK_REDIRECT_URI || 'http://localhost:3000/api/facebook/callback';
+    this.redirectUri =
+      process.env.FACEBOOK_REDIRECT_URI || 'http://localhost:3000/api/facebook/callback';
   }
 
   public isConfigured(): boolean {
@@ -101,7 +103,7 @@ class FacebookService {
       throw new Error(`Facebook OAuth token exchange failed: ${JSON.stringify(err)}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       userAccessToken: data.access_token,
       expiresAt: Date.now() + (data.expires_in || 3600) * 1000,
@@ -111,7 +113,9 @@ class FacebookService {
   /**
    * Step 3: Get long-lived user access token (optional, for better token management)
    */
-  public async getLongLivedUserToken(shortLivedToken: string): Promise<{ accessToken: string; expiresAt: number }> {
+  public async getLongLivedUserToken(
+    shortLivedToken: string,
+  ): Promise<{ accessToken: string; expiresAt: number }> {
     const params = new URLSearchParams({
       client_id: this.appId,
       client_secret: this.appSecret,
@@ -126,7 +130,7 @@ class FacebookService {
       throw new Error(`Facebook long-lived token exchange failed: ${JSON.stringify(err)}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       accessToken: data.access_token,
       expiresAt: Date.now() + (data.expires_in || 5184000) * 1000, // 60 days default
@@ -152,13 +156,13 @@ class FacebookService {
           throw new Error(`Failed to fetch Facebook pages: ${JSON.stringify(err)}`);
         }
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return data.data || [];
       },
       async () => {
         logger.warn('Facebook circuit breaker open, page fetch skipped');
         throw new Error('Facebook API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -181,12 +185,12 @@ class FacebookService {
           throw new Error(`Failed to fetch page access token: ${JSON.stringify(err)}`);
         }
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return data.access_token;
       },
       async () => {
         throw new Error('Facebook API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -197,7 +201,7 @@ class FacebookService {
     return circuitBreakerService.execute(
       'facebook',
       async () => {
-        const pageAccessToken = request.imageUrl 
+        const pageAccessToken = request.imageUrl
           ? await this.getPageAccessTokenForPost(request.pageId)
           : await this.getPageAccessTokenForPost(request.pageId);
 
@@ -214,10 +218,13 @@ class FacebookService {
         // Handle scheduled posts
         if (request.scheduledTime) {
           params.append('published', 'false');
-          params.append('scheduled_publish_time', String(Math.floor(request.scheduledTime.getTime() / 1000)));
+          params.append(
+            'scheduled_publish_time',
+            String(Math.floor(request.scheduledTime.getTime() / 1000)),
+          );
         }
 
-        const endpoint = request.imageUrl 
+        const endpoint = request.imageUrl
           ? `${API_BASE}/${request.pageId}/photos`
           : `${API_BASE}/${request.pageId}/feed`;
 
@@ -234,11 +241,11 @@ class FacebookService {
           throw new Error(`Failed to post to Facebook page: ${JSON.stringify(err)}`);
         }
 
-        const data = await response.json() as any;
-        
+        const data = (await response.json()) as any;
+
         // Get the permalink for the created post
         const permalink = await this.getPostPermalink(request.pageId, data.id, pageAccessToken);
-        
+
         return {
           id: data.id,
           message: request.message,
@@ -248,14 +255,18 @@ class FacebookService {
       },
       async () => {
         throw new Error('Facebook API temporarily unavailable. Post has been queued for retry.');
-      }
+      },
     );
   }
 
   /**
    * Get the permalink URL for a post
    */
-  private async getPostPermalink(pageId: string, postId: string, accessToken: string): Promise<string | undefined> {
+  private async getPostPermalink(
+    pageId: string,
+    postId: string,
+    accessToken: string,
+  ): Promise<string | undefined> {
     try {
       const params = new URLSearchParams({
         fields: 'permalink_url',
@@ -264,7 +275,7 @@ class FacebookService {
 
       const response = await fetch(`${API_BASE}/${postId}?${params}`);
       if (response.ok) {
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return data.permalink_url;
       }
     } catch (error) {
@@ -277,7 +288,7 @@ class FacebookService {
    * Get page access token from stored tokens (simplified for cross-platform handling)
    * In production, this would retrieve from database based on user/page mapping
    */
-  private async getPageAccessTokenForPost(pageId: string): Promise<string> {
+  private async getPageAccessTokenForPost(_pageId: string): Promise<string> {
     // This is a placeholder - in production, you'd store and retrieve page access tokens
     // from your database associated with the user
     throw new Error('Page access token not found. Please reconnect your Facebook account.');
@@ -288,7 +299,7 @@ class FacebookService {
    */
   public async postToPageWithUserToken(
     userAccessToken: string,
-    request: FacebookPostRequest
+    request: FacebookPostRequest,
   ): Promise<FacebookPagePost> {
     return circuitBreakerService.execute(
       'facebook',
@@ -309,10 +320,13 @@ class FacebookService {
         // Handle scheduled posts
         if (request.scheduledTime) {
           params.append('published', 'false');
-          params.append('scheduled_publish_time', String(Math.floor(request.scheduledTime.getTime() / 1000)));
+          params.append(
+            'scheduled_publish_time',
+            String(Math.floor(request.scheduledTime.getTime() / 1000)),
+          );
         }
 
-        const endpoint = request.imageUrl 
+        const endpoint = request.imageUrl
           ? `${API_BASE}/${request.pageId}/photos`
           : `${API_BASE}/${request.pageId}/feed`;
 
@@ -329,10 +343,10 @@ class FacebookService {
           throw new Error(`Failed to post to Facebook page: ${JSON.stringify(err)}`);
         }
 
-        const data = await response.json() as any;
-        
+        const data = (await response.json()) as any;
+
         const permalink = await this.getPostPermalink(request.pageId, data.id, pageAccessToken);
-        
+
         return {
           id: data.id,
           message: request.message,
@@ -342,7 +356,7 @@ class FacebookService {
       },
       async () => {
         throw new Error('Facebook API temporarily unavailable. Post has been queued for retry.');
-      }
+      },
     );
   }
 
@@ -352,7 +366,7 @@ class FacebookService {
   public async getPostComments(
     pageId: string,
     postId: string,
-    accessToken: string
+    accessToken: string,
   ): Promise<FacebookComment[]> {
     return circuitBreakerService.execute(
       'facebook',
@@ -369,13 +383,13 @@ class FacebookService {
           throw new Error(`Failed to fetch comments: ${JSON.stringify(err)}`);
         }
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return data.data || [];
       },
       async () => {
         logger.warn('Facebook circuit breaker open, comments fetch skipped');
         return [];
-      }
+      },
     );
   }
 
@@ -386,7 +400,7 @@ class FacebookService {
     pageId: string,
     commentId: string,
     message: string,
-    accessToken: string
+    accessToken: string,
   ): Promise<{ id: string }> {
     return circuitBreakerService.execute(
       'facebook',
@@ -413,7 +427,7 @@ class FacebookService {
       },
       async () => {
         throw new Error('Facebook API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -440,7 +454,7 @@ class FacebookService {
       },
       async () => {
         throw new Error('Facebook API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -450,7 +464,7 @@ class FacebookService {
   public async getPageInsights(
     pageId: string,
     accessToken: string,
-    metrics: string[] = ['page_impressions', 'page_engagement', 'page_fan_count']
+    metrics: string[] = ['page_impressions', 'page_engagement', 'page_fan_count'],
   ): Promise<any> {
     return circuitBreakerService.execute(
       'facebook',
@@ -472,7 +486,7 @@ class FacebookService {
       async () => {
         logger.warn('Facebook circuit breaker open, insights fetch skipped');
         return { data: [] };
-      }
+      },
     );
   }
 

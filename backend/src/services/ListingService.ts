@@ -12,11 +12,11 @@ export class ListingService {
    */
   async toggleVisibility(listingId: string, mentorId: string, isActive: boolean) {
     const listing = await prisma.listing.findUnique({ where: { id: listingId } });
-    
+
     if (!listing) {
       throw new Error('Listing not found');
     }
-    
+
     // Ensure only the mentor who owns the listing can toggle it
     if (listing.mentorId !== mentorId) {
       throw new Error('Unauthorized: You can only toggle your own listings');
@@ -24,7 +24,7 @@ export class ListingService {
 
     return prisma.listing.update({
       where: { id: listingId },
-      data: { isActive }
+      data: { isActive },
     });
   }
 
@@ -33,16 +33,21 @@ export class ListingService {
    * @param query Search string
    * @param params Page/limit pagination params
    */
-  async searchListings(query: string = '', params: PageLimitParams): Promise<{ data: any[]; total: number }> {
+  async searchListings(
+    query: string = '',
+    params: PageLimitParams,
+  ): Promise<{ data: any[]; total: number }> {
     const q = query.trim();
     const where = {
       isActive: true,
-      ...(q ? {
-        OR: [
-          { title: { contains: q, mode: 'insensitive' as const } },
-          { description: { contains: q, mode: 'insensitive' as const } },
-        ],
-      } : {}),
+      ...(q
+        ? {
+            OR: [
+              { title: { contains: q, mode: 'insensitive' as const } },
+              { description: { contains: q, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
     };
 
     const [total, data] = await Promise.all([

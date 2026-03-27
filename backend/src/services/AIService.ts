@@ -7,7 +7,7 @@ const tracer = trace.getTracer('socialflow-ai');
 
 /**
  * AIService - Wrapper for Google Gemini AI with circuit breaker protection
- * 
+ *
  * Provides resilient AI operations with automatic failure handling
  * and fallback strategies.
  */
@@ -24,7 +24,7 @@ class AIService {
    */
   private initializeAI(): void {
     const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-    
+
     if (apiKey && apiKey !== 'your_gemini_api_key_here') {
       try {
         this.genAI = new GoogleGenerativeAI(apiKey);
@@ -49,7 +49,7 @@ class AIService {
   public async generateContent(
     prompt: string,
     fallbackResponse?: string,
-    userId?: string
+    userId?: string,
   ): Promise<string> {
     if (!this.model) {
       throw new Error('Gemini AI not initialized. Please configure API_KEY.');
@@ -65,7 +65,14 @@ class AIService {
     });
 
     if (userId) {
-      eventBus.emitJobProgress({ jobId, userId, type: 'ai_generation', status: 'processing', progress: 0, message: 'Generating content…' });
+      eventBus.emitJobProgress({
+        jobId,
+        userId,
+        type: 'ai_generation',
+        status: 'processing',
+        progress: 0,
+        message: 'Generating content…',
+      });
     }
 
     try {
@@ -88,19 +95,36 @@ class AIService {
             return fallbackResponse;
           }
           throw new Error('AI service temporarily unavailable. Please try again later.');
-        }
+        },
       );
 
       if (userId) {
-        eventBus.emitJobProgress({ jobId, userId, type: 'ai_generation', status: 'completed', progress: 100, message: 'Done' });
+        eventBus.emitJobProgress({
+          jobId,
+          userId,
+          type: 'ai_generation',
+          status: 'completed',
+          progress: 100,
+          message: 'Done',
+        });
       }
       span.setStatus({ code: SpanStatusCode.OK });
       return result;
     } catch (err) {
       if (userId) {
-        eventBus.emitJobProgress({ jobId, userId, type: 'ai_generation', status: 'failed', progress: 0, error: err instanceof Error ? err.message : String(err) });
+        eventBus.emitJobProgress({
+          jobId,
+          userId,
+          type: 'ai_generation',
+          status: 'failed',
+          progress: 0,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
-      span.setStatus({ code: SpanStatusCode.ERROR, message: err instanceof Error ? err.message : String(err) });
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: err instanceof Error ? err.message : String(err),
+      });
       span.recordException(err as Error);
       throw err;
     } finally {
@@ -114,12 +138,12 @@ class AIService {
   public async generateCaption(
     topic: string,
     platform: string,
-    tone: string = 'professional'
+    tone: string = 'professional',
   ): Promise<string> {
     const prompt = `Write a ${tone} social media caption for ${platform} about: "${topic}". Include relevant hashtags. Keep it engaging and concise.`;
-    
+
     const fallback = `Check out our latest update about ${topic}! #${platform} #update`;
-    
+
     return this.generateContent(prompt, fallback);
   }
 
@@ -136,13 +160,16 @@ Format output as a simple list of 3 strings separated by newlines. No numbering.
 
     try {
       const response = await this.generateContent(prompt);
-      return response.split('\n').filter(line => line.trim().length > 0).slice(0, 3);
-    } catch (error) {
+      return response
+        .split('\n')
+        .filter((line) => line.trim().length > 0)
+        .slice(0, 3);
+    } catch (_error) {
       // Fallback replies
       return [
         'Thank you for reaching out!',
         "We'll get back to you shortly.",
-        'Could you provide more details?'
+        'Could you provide more details?',
       ];
     }
   }
@@ -177,7 +204,7 @@ Format as JSON: {"sentiment": "...", "topics": [...], "keywords": [...]}`;
       span.setAttribute('ai.sentiment', parsed.sentiment ?? 'unknown');
       span.setStatus({ code: SpanStatusCode.OK });
       return parsed;
-    } catch (error) {
+    } catch (_error) {
       span.setAttribute('ai.fallback', true);
       span.setStatus({ code: SpanStatusCode.ERROR, message: 'analyzeContent fallback' });
       return {

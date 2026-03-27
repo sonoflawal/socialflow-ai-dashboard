@@ -81,8 +81,9 @@ describe('UserRepository', () => {
     it('propagates Prisma errors (e.g. duplicate email)', async () => {
       const error = Object.assign(new Error('Unique constraint'), { code: 'P2002' });
       userMock.create.mockRejectedValue(error);
-      await expect(repo.create({ email: 'dupe@example.com', passwordHash: 'x' }))
-        .rejects.toMatchObject({ code: 'P2002' });
+      await expect(
+        repo.create({ email: 'dupe@example.com', passwordHash: 'x' }),
+      ).rejects.toMatchObject({ code: 'P2002' });
     });
   });
 
@@ -93,7 +94,10 @@ describe('UserRepository', () => {
       userMock.update.mockResolvedValue(updated);
       const result = await repo.update('user-1', { role: 'admin' });
       expect(result).toEqual(updated);
-      expect(userMock.update).toHaveBeenCalledWith({ where: { id: 'user-1' }, data: { role: 'admin' } });
+      expect(userMock.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { role: 'admin' },
+      });
     });
 
     it('returns null when user does not exist (P2025)', async () => {

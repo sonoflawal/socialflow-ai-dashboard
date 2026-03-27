@@ -168,7 +168,7 @@ class TikTokService {
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -194,7 +194,7 @@ class TikTokService {
       },
       async () => {
         throw new Error('TikTok API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -207,7 +207,7 @@ class TikTokService {
   public async initiateVideoUpload(
     accessToken: string,
     fileSizeBytes: number,
-    request: TikTokVideoUploadRequest
+    request: TikTokVideoUploadRequest,
   ): Promise<{ publishId: string; uploadUrl: string; chunkSize: number; totalChunks: number }> {
     return circuitBreakerService.execute(
       'tiktok',
@@ -265,7 +265,7 @@ class TikTokService {
       },
       async () => {
         throw new Error('TikTok API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -278,7 +278,7 @@ class TikTokService {
     chunkData: Buffer,
     chunkIndex: number,
     totalChunks: number,
-    totalFileSize: number
+    totalFileSize: number,
   ): Promise<void> {
     const startByte = chunkIndex * CHUNK_SIZE_BYTES;
     const endByte = Math.min(startByte + chunkData.length - 1, totalFileSize - 1);
@@ -296,7 +296,7 @@ class TikTokService {
     if (!response.ok && response.status !== 206) {
       const text = await response.text();
       throw new Error(
-        `Chunk ${chunkIndex + 1}/${totalChunks} upload failed (${response.status}): ${text}`
+        `Chunk ${chunkIndex + 1}/${totalChunks} upload failed (${response.status}): ${text}`,
       );
     }
 
@@ -308,7 +308,7 @@ class TikTokService {
    */
   public async uploadVideoFromUrl(
     accessToken: string,
-    request: TikTokVideoUploadRequest
+    request: TikTokVideoUploadRequest,
   ): Promise<{ publishId: string }> {
     return circuitBreakerService.execute(
       'tiktok',
@@ -353,7 +353,7 @@ class TikTokService {
       },
       async () => {
         throw new Error('TikTok API temporarily unavailable');
-      }
+      },
     );
   }
 
@@ -362,10 +362,7 @@ class TikTokService {
   /**
    * Poll the processing status of an uploaded video.
    */
-  public async getVideoStatus(
-    accessToken: string,
-    publishId: string
-  ): Promise<TikTokVideoStatus> {
+  public async getVideoStatus(accessToken: string, publishId: string): Promise<TikTokVideoStatus> {
     return circuitBreakerService.execute(
       'tiktok',
       async () => {
@@ -396,7 +393,7 @@ class TikTokService {
       },
       async () => {
         throw new Error('TikTok API temporarily unavailable');
-      }
+      },
     );
   }
 

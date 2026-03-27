@@ -32,14 +32,21 @@ export async function createOrganization(req: AuthRequest, res: Response): Promi
 /** GET /api/organizations — list orgs the caller belongs to */
 export async function listOrganizations(req: AuthRequest, res: Response): Promise<void> {
   const params = parsePageLimit(req);
-  const where  = { userId: req.userId! };
+  const where = { userId: req.userId! };
 
   const [total, memberships] = await Promise.all([
     prisma.organizationMember.count({ where }),
-    prisma.organizationMember.findMany({ where, include: { organization: true }, ...toSkipTake(params) }),
+    prisma.organizationMember.findMany({
+      where,
+      include: { organization: true },
+      ...toSkipTake(params),
+    }),
   ]);
 
-  const data = memberships.map((m: typeof memberships[number]) => ({ ...m.organization, role: m.role }));
+  const data = memberships.map((m: (typeof memberships)[number]) => ({
+    ...m.organization,
+    role: m.role,
+  }));
   res.json(buildPageResponse(req, data, total, params));
 }
 
@@ -49,7 +56,11 @@ export async function getOrganization(req: AuthRequest, res: Response): Promise<
 
   const membership = await prisma.organizationMember.findUnique({
     where: { organizationId_userId: { organizationId: orgId, userId: req.userId! } },
-    include: { organization: { include: { members: { include: { user: { select: { id: true, email: true } } } } } } },
+    include: {
+      organization: {
+        include: { members: { include: { user: { select: { id: true, email: true } } } } },
+      },
+    },
   });
 
   if (!membership) {

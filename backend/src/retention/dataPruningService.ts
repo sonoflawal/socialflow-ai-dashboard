@@ -55,7 +55,11 @@ const ensureDirectory = async (directoryPath: string): Promise<void> => {
   await fs.mkdir(directoryPath, { recursive: true });
 };
 
-const archiveFile = async (sourceFilePath: string, destinationRoot: string, relativePath: string): Promise<void> => {
+const archiveFile = async (
+  sourceFilePath: string,
+  destinationRoot: string,
+  relativePath: string,
+): Promise<void> => {
   const destinationPath = path.join(destinationRoot, relativePath);
   const destinationDirectory = path.dirname(destinationPath);
 
@@ -111,7 +115,9 @@ const pruneTarget = async (
   }
 };
 
-export const runDataPruning = async (overrideConfig?: Partial<DataRetentionConfig>): Promise<DataPruningSummary> => {
+export const runDataPruning = async (
+  overrideConfig?: Partial<DataRetentionConfig>,
+): Promise<DataPruningSummary> => {
   const defaultConfig = getDataRetentionConfig();
   const config: DataRetentionConfig = {
     ...defaultConfig,

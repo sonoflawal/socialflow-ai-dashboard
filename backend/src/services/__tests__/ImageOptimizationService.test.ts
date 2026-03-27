@@ -1,6 +1,5 @@
 import { ImageOptimizationService } from '../ImageOptimizationService';
 import fs from 'fs/promises';
-import path from 'path';
 
 jest.mock('sharp');
 jest.mock('fs/promises');
@@ -47,8 +46,8 @@ describe('ImageOptimizationService', () => {
 
   describe('optimize', () => {
     it('should optimize image with default options', async () => {
-      const inputPath = '/path/to/image.jpg';
-      const options = {};
+      const _inputPath = '/path/to/image.jpg';
+      const _options = {};
 
       // Mock sharp
       const mockWebp = jest.fn().mockResolvedValue(Buffer.from('webp-data'));
@@ -65,8 +64,8 @@ describe('ImageOptimizationService', () => {
       // Mock fs.readFile to return cached data
       (fs.readFile as jest.Mock).mockResolvedValue(Buffer.from('cached-data'));
 
-      const inputPath = '/path/to/image.jpg';
-      const options = { width: 800 };
+      const _inputPath = '/path/to/image.jpg';
+      const _options = { width: 800 };
 
       // This would return cached data without optimization
       // In real implementation, verify cache hit

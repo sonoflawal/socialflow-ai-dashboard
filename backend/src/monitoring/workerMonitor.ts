@@ -143,7 +143,9 @@ export class WorkerMonitor {
 
     monitoredQueue.events.on('failed', async ({ jobId, failedReason, prev }) => {
       const reason = failedReason ?? 'unknown';
-      const isRetryable = this.options.retryableFailurePatterns.some((pattern) => pattern.test(reason));
+      const isRetryable = this.options.retryableFailurePatterns.some((pattern) =>
+        pattern.test(reason),
+      );
 
       if (!isRetryable) {
         return;
@@ -339,13 +341,15 @@ export class WorkerMonitor {
   private async checkQueues(): Promise<void> {
     for (const queue of this.queues.values()) {
       try {
-        const [waitingCount, activeCount, failedCount, waitingJobs, activeJobs] = await Promise.all([
-          queue.queue.getWaitingCount(),
-          queue.queue.getActiveCount(),
-          queue.queue.getFailedCount(),
-          queue.queue.getWaiting(0, 0),
-          queue.queue.getActive(0, 100),
-        ]);
+        const [waitingCount, activeCount, failedCount, waitingJobs, activeJobs] = await Promise.all(
+          [
+            queue.queue.getWaitingCount(),
+            queue.queue.getActiveCount(),
+            queue.queue.getFailedCount(),
+            queue.queue.getWaiting(0, 0),
+            queue.queue.getActive(0, 100),
+          ],
+        );
 
         queue.lastCheckedAt = new Date().toISOString();
 
@@ -493,10 +497,16 @@ export class WorkerMonitor {
     }
 
     if (payload.severity === 'critical') {
-      this.options.logger.error(`[worker-monitor] ${payload.code}: ${payload.message}`, payload.metadata ?? {});
+      this.options.logger.error(
+        `[worker-monitor] ${payload.code}: ${payload.message}`,
+        payload.metadata ?? {},
+      );
       return;
     }
 
-    this.options.logger.warn(`[worker-monitor] ${payload.code}: ${payload.message}`, payload.metadata ?? {});
+    this.options.logger.warn(
+      `[worker-monitor] ${payload.code}: ${payload.message}`,
+      payload.metadata ?? {},
+    );
   }
 }

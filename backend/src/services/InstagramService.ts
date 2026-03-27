@@ -1,21 +1,21 @@
-import { circuitBreakerService } from "./CircuitBreakerService";
-import { createLogger } from "../lib/logger";
+import { circuitBreakerService } from './CircuitBreakerService';
+import { createLogger } from '../lib/logger';
 
-const logger = createLogger("instagram-service");
+const logger = createLogger('instagram-service');
 
-const API_BASE = "https://graph.facebook.com/v18.0";
+const API_BASE = 'https://graph.facebook.com/v18.0';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type InstagramMediaType = "IMAGE" | "VIDEO" | "REELS" | "CAROUSEL";
+export type InstagramMediaType = 'IMAGE' | 'VIDEO' | 'REELS' | 'CAROUSEL';
 
 /** Supported image aspect ratios per Instagram spec */
 const VALID_IMAGE_RATIOS = [
-  { label: "1:1", min: 0.99, max: 1.01 },
-  { label: "4:5", min: 0.79, max: 0.81 },
-  { label: "1.91:1", min: 1.9, max: 1.92 },
+  { label: '1:1', min: 0.99, max: 1.01 },
+  { label: '4:5', min: 0.79, max: 0.81 },
+  { label: '1.91:1', min: 1.9, max: 1.92 },
 ];
 
 export interface InstagramAccount {
@@ -39,7 +39,7 @@ export interface InstagramPublishRequest {
   /** Required for REELS */
   shareToFeed?: boolean;
   /** For CAROUSEL — list of publicly accessible media URLs */
-  carouselItems?: Array<{ mediaUrl: string; mediaType: "IMAGE" | "VIDEO" }>;
+  carouselItems?: Array<{ mediaUrl: string; mediaType: 'IMAGE' | 'VIDEO' }>;
   /** Schedule publish time (must be 10 min – 75 days in the future) */
   scheduledPublishTime?: Date;
   /** Image width/height for aspect ratio validation (optional but recommended) */
@@ -73,12 +73,12 @@ class InstagramService {
   private readonly redirectUri: string;
 
   constructor() {
-    this.appId = process.env.FACEBOOK_APP_ID || "";
-    this.appSecret = process.env.FACEBOOK_APP_SECRET || "";
+    this.appId = process.env.FACEBOOK_APP_ID || '';
+    this.appSecret = process.env.FACEBOOK_APP_SECRET || '';
     this.redirectUri =
       process.env.INSTAGRAM_REDIRECT_URI ||
       process.env.FACEBOOK_REDIRECT_URI ||
-      "http://localhost:3000/api/instagram/callback";
+      'http://localhost:3000/api/instagram/callback';
   }
 
   public isConfigured(): boolean {
@@ -93,14 +93,14 @@ class InstagramService {
     const params = new URLSearchParams({
       client_id: this.appId,
       redirect_uri: this.redirectUri,
-      response_type: "code",
+      response_type: 'code',
       scope: [
-        "instagram_basic",
-        "instagram_content_publish",
-        "instagram_manage_insights",
-        "pages_show_list",
-        "pages_read_engagement",
-      ].join(","),
+        'instagram_basic',
+        'instagram_content_publish',
+        'instagram_manage_insights',
+        'pages_show_list',
+        'pages_read_engagement',
+      ].join(','),
     });
     return `https://www.facebook.com/v18.0/dialog/oauth?${params}`;
   }
@@ -108,9 +108,7 @@ class InstagramService {
   /**
    * Exchange OAuth code for a user access token.
    */
-  public async exchangeCode(
-    code: string,
-  ): Promise<{ accessToken: string; expiresAt: number }> {
+  public async exchangeCode(code: string): Promise<{ accessToken: string; expiresAt: number }> {
     const params = new URLSearchParams({
       client_id: this.appId,
       client_secret: this.appSecret,
@@ -121,9 +119,7 @@ class InstagramService {
     const res = await fetch(`${API_BASE}/oauth/access_token?${params}`);
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(
-        `Instagram OAuth token exchange failed: ${JSON.stringify(err)}`,
-      );
+      throw new Error(`Instagram OAuth token exchange failed: ${JSON.stringify(err)}`);
     }
 
     const data = (await res.json()) as any;
@@ -136,37 +132,29 @@ class InstagramService {
   /**
    * Retrieve the Instagram Business Account linked to a Facebook Page.
    */
-  public async getIgAccount(
-    pageId: string,
-    pageAccessToken: string,
-  ): Promise<InstagramAccount> {
+  public async getIgAccount(pageId: string, pageAccessToken: string): Promise<InstagramAccount> {
     return circuitBreakerService.execute(
-      "instagram",
+      'instagram',
       async () => {
         const params = new URLSearchParams({
           fields:
-            "instagram_business_account{id,name,username,biography,followers_count,media_count}",
+            'instagram_business_account{id,name,username,biography,followers_count,media_count}',
           access_token: pageAccessToken,
         });
 
         const res = await fetch(`${API_BASE}/${pageId}?${params}`);
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(
-            `Failed to fetch Instagram account: ${JSON.stringify(err)}`,
-          );
+          throw new Error(`Failed to fetch Instagram account: ${JSON.stringify(err)}`);
         }
 
         const data = (await res.json()) as any;
         const iga = data.instagram_business_account;
-        if (!iga)
-          throw new Error(
-            "No Instagram Business Account linked to this Facebook Page.",
-          );
+        if (!iga) throw new Error('No Instagram Business Account linked to this Facebook Page.');
         return iga as InstagramAccount;
       },
       async () => {
-        throw new Error("Instagram API temporarily unavailable");
+        throw new Error('Instagram API temporarily unavailable');
       },
     );
   }
@@ -182,27 +170,21 @@ class InstagramService {
   /**
    * Full publish flow: validates, creates container, waits, then publishes.
    */
-  public async publish(
-    req: InstagramPublishRequest,
-  ): Promise<InstagramPublishResult> {
+  public async publish(req: InstagramPublishRequest): Promise<InstagramPublishResult> {
     this.validateRequest(req);
 
     return circuitBreakerService.execute(
-      "instagram",
+      'instagram',
       async () => {
         let containerId: string;
 
-        if (req.mediaType === "CAROUSEL") {
+        if (req.mediaType === 'CAROUSEL') {
           containerId = await this.createCarouselContainer(req);
         } else {
           containerId = await this.createContainer(req);
         }
 
-        await this.waitForContainer(
-          req.igAccountId,
-          containerId,
-          req.accessToken,
-        );
+        await this.waitForContainer(req.igAccountId, containerId, req.accessToken);
 
         const mediaId = await this.publishContainer(
           req.igAccountId,
@@ -213,7 +195,7 @@ class InstagramService {
 
         const permalink = await this.getPermalink(mediaId, req.accessToken);
 
-        logger.info("Instagram media published", {
+        logger.info('Instagram media published', {
           igAccountId: req.igAccountId,
           mediaId,
           mediaType: req.mediaType,
@@ -227,9 +209,7 @@ class InstagramService {
         };
       },
       async () => {
-        throw new Error(
-          "Instagram API temporarily unavailable. Please retry later.",
-        );
+        throw new Error('Instagram API temporarily unavailable. Please retry later.');
       },
     );
   }
@@ -242,35 +222,33 @@ class InstagramService {
       access_token: req.accessToken,
     };
 
-    if (req.mediaType === "IMAGE") {
+    if (req.mediaType === 'IMAGE') {
       body.image_url = req.mediaUrl;
-      body.media_type = "IMAGE";
-    } else if (req.mediaType === "VIDEO") {
+      body.media_type = 'IMAGE';
+    } else if (req.mediaType === 'VIDEO') {
       body.video_url = req.mediaUrl;
-      body.media_type = "VIDEO";
-    } else if (req.mediaType === "REELS") {
+      body.media_type = 'VIDEO';
+    } else if (req.mediaType === 'REELS') {
       body.video_url = req.mediaUrl;
-      body.media_type = "REELS";
-      body.share_to_feed = req.shareToFeed ? "true" : "false";
+      body.media_type = 'REELS';
+      body.share_to_feed = req.shareToFeed ? 'true' : 'false';
     }
 
     if (req.caption) body.caption = req.caption;
 
     const res = await fetch(`${API_BASE}/${req.igAccountId}/media`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(body).toString(),
     });
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(
-        `Failed to create Instagram media container: ${JSON.stringify(err)}`,
-      );
+      throw new Error(`Failed to create Instagram media container: ${JSON.stringify(err)}`);
     }
 
     const data = (await res.json()) as any;
-    logger.info("Instagram container created", {
+    logger.info('Instagram container created', {
       containerId: data.id,
       mediaType: req.mediaType,
     });
@@ -280,13 +258,11 @@ class InstagramService {
   /**
    * Step 1b — Create a CAROUSEL container (creates child containers first).
    */
-  private async createCarouselContainer(
-    req: InstagramPublishRequest,
-  ): Promise<string> {
+  private async createCarouselContainer(req: InstagramPublishRequest): Promise<string> {
     if (!req.carouselItems?.length)
-      throw new Error("carouselItems required for CAROUSEL media type");
+      throw new Error('carouselItems required for CAROUSEL media type');
     if (req.carouselItems.length < 2 || req.carouselItems.length > 10) {
-      throw new Error("Carousel must have between 2 and 10 items");
+      throw new Error('Carousel must have between 2 and 10 items');
     }
 
     // Create child containers in parallel
@@ -294,23 +270,21 @@ class InstagramService {
       req.carouselItems.map(async (item) => {
         const body: Record<string, string> = {
           access_token: req.accessToken,
-          is_carousel_item: "true",
+          is_carousel_item: 'true',
         };
-        if (item.mediaType === "IMAGE") body.image_url = item.mediaUrl;
+        if (item.mediaType === 'IMAGE') body.image_url = item.mediaUrl;
         else body.video_url = item.mediaUrl;
         body.media_type = item.mediaType;
 
         const res = await fetch(`${API_BASE}/${req.igAccountId}/media`, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams(body).toString(),
         });
 
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(
-            `Failed to create carousel child container: ${JSON.stringify(err)}`,
-          );
+          throw new Error(`Failed to create carousel child container: ${JSON.stringify(err)}`);
         }
 
         const data = (await res.json()) as any;
@@ -320,27 +294,25 @@ class InstagramService {
 
     // Create the parent carousel container
     const body = new URLSearchParams({
-      media_type: "CAROUSEL",
-      children: childIds.join(","),
+      media_type: 'CAROUSEL',
+      children: childIds.join(','),
       access_token: req.accessToken,
       ...(req.caption ? { caption: req.caption } : {}),
     });
 
     const res = await fetch(`${API_BASE}/${req.igAccountId}/media`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString(),
     });
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(
-        `Failed to create carousel container: ${JSON.stringify(err)}`,
-      );
+      throw new Error(`Failed to create carousel container: ${JSON.stringify(err)}`);
     }
 
     const data = (await res.json()) as any;
-    logger.info("Instagram carousel container created", {
+    logger.info('Instagram carousel container created', {
       containerId: data.id,
       childCount: childIds.length,
     });
@@ -360,29 +332,27 @@ class InstagramService {
   ): Promise<void> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const params = new URLSearchParams({
-        fields: "status_code,status",
+        fields: 'status_code,status',
         access_token: accessToken,
       });
 
       const res = await fetch(`${API_BASE}/${containerId}?${params}`);
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(
-          `Failed to check container status: ${JSON.stringify(err)}`,
-        );
+        throw new Error(`Failed to check container status: ${JSON.stringify(err)}`);
       }
 
       const data = (await res.json()) as any;
       const status: string = data.status_code;
 
-      if (status === "FINISHED") return;
-      if (status === "ERROR" || status === "EXPIRED") {
+      if (status === 'FINISHED') return;
+      if (status === 'ERROR' || status === 'EXPIRED') {
         throw new Error(
           `Instagram container processing failed with status: ${status} — ${data.status}`,
         );
       }
 
-      logger.info("Waiting for Instagram container", {
+      logger.info('Waiting for Instagram container', {
         containerId,
         status,
         attempt,
@@ -390,9 +360,7 @@ class InstagramService {
       await new Promise((r) => setTimeout(r, intervalMs));
     }
 
-    throw new Error(
-      `Instagram container ${containerId} did not finish processing in time`,
-    );
+    throw new Error(`Instagram container ${containerId} did not finish processing in time`);
   }
 
   /**
@@ -410,23 +378,19 @@ class InstagramService {
     };
 
     if (scheduledPublishTime) {
-      body.published = "false";
-      body.scheduled_publish_time = String(
-        Math.floor(scheduledPublishTime.getTime() / 1000),
-      );
+      body.published = 'false';
+      body.scheduled_publish_time = String(Math.floor(scheduledPublishTime.getTime() / 1000));
     }
 
     const res = await fetch(`${API_BASE}/${igAccountId}/media_publish`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(body).toString(),
     });
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(
-        `Failed to publish Instagram container: ${JSON.stringify(err)}`,
-      );
+      throw new Error(`Failed to publish Instagram container: ${JSON.stringify(err)}`);
     }
 
     const data = (await res.json()) as any;
@@ -436,24 +400,19 @@ class InstagramService {
   /**
    * Fetch media insights for a published post.
    */
-  public async getInsights(
-    mediaId: string,
-    accessToken: string,
-  ): Promise<InstagramInsights> {
+  public async getInsights(mediaId: string, accessToken: string): Promise<InstagramInsights> {
     return circuitBreakerService.execute(
-      "instagram",
+      'instagram',
       async () => {
         const params = new URLSearchParams({
-          metric: "impressions,reach,likes,comments,shares,saved",
+          metric: 'impressions,reach,likes,comments,shares,saved',
           access_token: accessToken,
         });
 
         const res = await fetch(`${API_BASE}/${mediaId}/insights?${params}`);
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(
-            `Failed to fetch Instagram insights: ${JSON.stringify(err)}`,
-          );
+          throw new Error(`Failed to fetch Instagram insights: ${JSON.stringify(err)}`);
         }
 
         const data = (await res.json()) as any;
@@ -472,7 +431,7 @@ class InstagramService {
         };
       },
       async () => {
-        throw new Error("Instagram API temporarily unavailable");
+        throw new Error('Instagram API temporarily unavailable');
       },
     );
   }
@@ -492,12 +451,11 @@ class InstagramService {
   // ---------------------------------------------------------------------------
 
   private validateRequest(req: InstagramPublishRequest): void {
-    if (!req.igAccountId) throw new Error("igAccountId is required");
-    if (!req.accessToken) throw new Error("accessToken is required");
-    if (!req.mediaUrl && req.mediaType !== "CAROUSEL")
-      throw new Error("mediaUrl is required");
+    if (!req.igAccountId) throw new Error('igAccountId is required');
+    if (!req.accessToken) throw new Error('accessToken is required');
+    if (!req.mediaUrl && req.mediaType !== 'CAROUSEL') throw new Error('mediaUrl is required');
 
-    if (req.mediaType === "IMAGE" && req.imageWidth && req.imageHeight) {
+    if (req.mediaType === 'IMAGE' && req.imageWidth && req.imageHeight) {
       this.validateAspectRatio(req.imageWidth, req.imageHeight);
     }
 
@@ -506,9 +464,7 @@ class InstagramService {
       const maxMs = 75 * 24 * 60 * 60 * 1000; // 75 days
       const delta = req.scheduledPublishTime.getTime() - Date.now();
       if (delta < minMs || delta > maxMs) {
-        throw new Error(
-          "Scheduled publish time must be between 10 minutes and 75 days from now",
-        );
+        throw new Error('Scheduled publish time must be between 10 minutes and 75 days from now');
       }
     }
   }
@@ -519,24 +475,19 @@ class InstagramService {
    */
   private validateAspectRatio(width: number, height: number): void {
     const ratio = width / height;
-    const valid = VALID_IMAGE_RATIOS.some(
-      (r) => ratio >= r.min && ratio <= r.max,
-    );
+    const valid = VALID_IMAGE_RATIOS.some((r) => ratio >= r.min && ratio <= r.max);
     if (!valid) {
       throw new Error(
         `Invalid image aspect ratio (${width}x${height}). ` +
-          `Instagram supports: ${VALID_IMAGE_RATIOS.map((r) => r.label).join(", ")}`,
+          `Instagram supports: ${VALID_IMAGE_RATIOS.map((r) => r.label).join(', ')}`,
       );
     }
   }
 
-  private async getPermalink(
-    mediaId: string,
-    accessToken: string,
-  ): Promise<string | undefined> {
+  private async getPermalink(mediaId: string, accessToken: string): Promise<string | undefined> {
     try {
       const params = new URLSearchParams({
-        fields: "permalink",
+        fields: 'permalink',
         access_token: accessToken,
       });
       const res = await fetch(`${API_BASE}/${mediaId}?${params}`);
@@ -545,7 +496,7 @@ class InstagramService {
         return data.permalink;
       }
     } catch (err) {
-      logger.warn("Failed to fetch Instagram permalink", {
+      logger.warn('Failed to fetch Instagram permalink', {
         mediaId,
         error: (err as Error).message,
       });

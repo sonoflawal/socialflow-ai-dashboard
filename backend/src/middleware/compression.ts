@@ -32,9 +32,9 @@ function shouldCompress(req: Request, res: Response): boolean {
  * The `compression` package negotiates Gzip via Accept-Encoding automatically.
  */
 const compressionOptions: CompressionOptions = {
-  filter:    shouldCompress,
+  filter: shouldCompress,
   threshold: COMPRESSION_THRESHOLD,
-  level:     zlib.constants.Z_DEFAULT_COMPRESSION, // balanced speed vs ratio
+  level: zlib.constants.Z_DEFAULT_COMPRESSION, // balanced speed vs ratio
 };
 
 /**

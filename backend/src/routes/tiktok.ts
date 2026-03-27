@@ -107,7 +107,9 @@ router.post('/video/upload', async (req: Request, res: Response) => {
   const expiresAt = Number(req.headers['x-tiktok-expires-at']);
 
   if (!accessToken || !refreshToken) {
-    return res.status(400).json({ error: 'x-tiktok-token and x-tiktok-refresh-token headers required.' });
+    return res
+      .status(400)
+      .json({ error: 'x-tiktok-token and x-tiktok-refresh-token headers required.' });
   }
 
   const { filePath, title, description, privacyLevel, disableDuet, disableComment, disableStitch } =
@@ -238,7 +240,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
   if (webhookSecret && signature) {
     const rawBody = JSON.stringify(req.body);
-    const expected = 'sha256=' + crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
+    const expected =
+      'sha256=' + crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
       logger.warn('TikTok webhook signature mismatch');
       return res.status(401).json({ error: 'Invalid webhook signature.' });

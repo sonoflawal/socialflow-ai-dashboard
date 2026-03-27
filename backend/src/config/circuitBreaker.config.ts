@@ -26,7 +26,7 @@ export const DEFAULT_CIRCUIT_CONFIG: CircuitBreakerConfig = {
   rollingCountTimeout: 10000, // 10 second window
   rollingCountBuckets: 10, // 10 buckets
   volumeThreshold: 5, // Need 5 requests minimum
-  name: "default",
+  name: 'default',
 };
 
 /**
@@ -41,7 +41,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 30000, // 30 second window
     rollingCountBuckets: 10,
     volumeThreshold: 3,
-    name: "ai-service",
+    name: 'ai-service',
   } as CircuitBreakerConfig,
 
   // Translation APIs - Moderate settings
@@ -52,7 +52,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 20000,
     rollingCountBuckets: 10,
     volumeThreshold: 5,
-    name: "translation-service",
+    name: 'translation-service',
   } as CircuitBreakerConfig,
 
   // Twitter/Social APIs - Strict settings
@@ -63,7 +63,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 15000,
     rollingCountBuckets: 10,
     volumeThreshold: 5,
-    name: "twitter-service",
+    name: 'twitter-service',
   } as CircuitBreakerConfig,
 
   // Blockchain RPC - Very strict
@@ -74,7 +74,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 10000,
     rollingCountBuckets: 10,
     volumeThreshold: 3,
-    name: "blockchain-service",
+    name: 'blockchain-service',
   } as CircuitBreakerConfig,
 
   // IPFS - Moderate to lenient
@@ -85,7 +85,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 20000,
     rollingCountBuckets: 10,
     volumeThreshold: 5,
-    name: "ipfs-service",
+    name: 'ipfs-service',
   } as CircuitBreakerConfig,
 
   // Price APIs - Lenient (not critical)
@@ -96,7 +96,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 30000,
     rollingCountBuckets: 10,
     volumeThreshold: 5,
-    name: "price-service",
+    name: 'price-service',
   } as CircuitBreakerConfig,
 
   // YouTube Data API v3
@@ -107,7 +107,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 20000,
     rollingCountBuckets: 10,
     volumeThreshold: 3,
-    name: "youtube-service",
+    name: 'youtube-service',
   } as CircuitBreakerConfig,
 
   // Facebook Graph API
@@ -118,7 +118,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 20000,
     rollingCountBuckets: 10,
     volumeThreshold: 3,
-    name: "facebook-service",
+    name: 'facebook-service',
   } as CircuitBreakerConfig,
 
   // Instagram Graph API
@@ -129,7 +129,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 20000,
     rollingCountBuckets: 10,
     volumeThreshold: 3,
-    name: "instagram-service",
+    name: 'instagram-service',
   } as CircuitBreakerConfig,
 
   // TikTok Content Posting API — lenient for chunked video uploads
@@ -140,7 +140,7 @@ export const CIRCUIT_CONFIGS = {
     rollingCountTimeout: 30000,
     rollingCountBuckets: 10,
     volumeThreshold: 3,
-    name: "tiktok-service",
+    name: 'tiktok-service',
   } as CircuitBreakerConfig,
 };
 
@@ -150,39 +150,38 @@ export const CIRCUIT_CONFIGS = {
 export const FALLBACK_STRATEGIES = {
   ai: {
     enabled: true,
-    message:
-      "AI service temporarily unavailable. Using cached or default response.",
+    message: 'AI service temporarily unavailable. Using cached or default response.',
   },
   translation: {
     enabled: true,
-    message: "Translation service unavailable. Returning original text.",
+    message: 'Translation service unavailable. Returning original text.',
   },
   twitter: {
     enabled: false,
-    message: "Social media API unavailable. Please try again later.",
+    message: 'Social media API unavailable. Please try again later.',
   },
   blockchain: {
     enabled: false,
-    message: "Blockchain network unavailable. Transaction cannot be processed.",
+    message: 'Blockchain network unavailable. Transaction cannot be processed.',
   },
   ipfs: {
     enabled: true,
-    message: "IPFS service unavailable. Using local storage fallback.",
+    message: 'IPFS service unavailable. Using local storage fallback.',
   },
   price: {
     enabled: true,
-    message: "Price service unavailable. Using cached prices.",
+    message: 'Price service unavailable. Using cached prices.',
   },
   facebook: {
     enabled: false,
-    message: "Facebook API unavailable. Please try again later.",
+    message: 'Facebook API unavailable. Please try again later.',
   },
   instagram: {
     enabled: false,
-    message: "Instagram API unavailable. Please try again later.",
+    message: 'Instagram API unavailable. Please try again later.',
   },
   tiktok: {
     enabled: false,
-    message: "TikTok API unavailable. Please try again later.",
+    message: 'TikTok API unavailable. Please try again later.',
   },
 };

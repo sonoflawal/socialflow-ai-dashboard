@@ -16,7 +16,14 @@ function makeNext(transform?: (p: MiddlewareParams) => void) {
 }
 
 function params(overrides: Partial<MiddlewareParams>): MiddlewareParams {
-  return { model: 'User', action: 'findMany', args: {}, dataPath: [], runInTransaction: false, ...overrides };
+  return {
+    model: 'User',
+    action: 'findMany',
+    args: {},
+    dataPath: [],
+    runInTransaction: false,
+    ...overrides,
+  };
 }
 
 describe('softDeleteMiddleware', () => {
@@ -26,22 +33,38 @@ describe('softDeleteMiddleware', () => {
       await softDeleteMiddleware(params({ action: 'delete', args: { where: { id: '1' } } }), next);
 
       expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({ action: 'update', args: expect.objectContaining({ data: expect.objectContaining({ deletedAt: expect.any(Date) }) }) })
+        expect.objectContaining({
+          action: 'update',
+          args: expect.objectContaining({
+            data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+          }),
+        }),
       );
     });
 
     it('converts deleteMany to updateMany with deletedAt', async () => {
       const next = makeNext();
-      await softDeleteMiddleware(params({ model: 'Listing', action: 'deleteMany', args: { where: { mentorId: 'x' } } }), next);
+      await softDeleteMiddleware(
+        params({ model: 'Listing', action: 'deleteMany', args: { where: { mentorId: 'x' } } }),
+        next,
+      );
 
       expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({ action: 'updateMany', args: expect.objectContaining({ data: expect.objectContaining({ deletedAt: expect.any(Date) }) }) })
+        expect.objectContaining({
+          action: 'updateMany',
+          args: expect.objectContaining({
+            data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+          }),
+        }),
       );
     });
 
     it('does NOT intercept delete for non-soft-delete models', async () => {
       const next = makeNext();
-      await softDeleteMiddleware(params({ model: 'DynamicConfig', action: 'delete', args: { where: { key: 'k' } } }), next);
+      await softDeleteMiddleware(
+        params({ model: 'DynamicConfig', action: 'delete', args: { where: { key: 'k' } } }),
+        next,
+      );
 
       expect(next).toHaveBeenCalledWith(expect.objectContaining({ action: 'delete' }));
     });
@@ -55,26 +78,36 @@ describe('softDeleteMiddleware', () => {
         await softDeleteMiddleware(params({ action, args: {} }), next);
 
         expect(next).toHaveBeenCalledWith(
-          expect.objectContaining({ args: expect.objectContaining({ where: { deletedAt: null } }) })
+          expect.objectContaining({
+            args: expect.objectContaining({ where: { deletedAt: null } }),
+          }),
         );
-      }
+      },
     );
 
     it('preserves existing where conditions alongside deletedAt: null', async () => {
       const next = makeNext();
-      await softDeleteMiddleware(params({ model: 'Listing', action: 'findMany', args: { where: { mentorId: 'abc' } } }), next);
+      await softDeleteMiddleware(
+        params({ model: 'Listing', action: 'findMany', args: { where: { mentorId: 'abc' } } }),
+        next,
+      );
 
       expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({ args: expect.objectContaining({ where: { mentorId: 'abc', deletedAt: null } }) })
+        expect.objectContaining({
+          args: expect.objectContaining({ where: { mentorId: 'abc', deletedAt: null } }),
+        }),
       );
     });
 
     it('does NOT add deletedAt filter for non-soft-delete models', async () => {
       const next = makeNext();
-      await softDeleteMiddleware(params({ model: 'DynamicConfig', action: 'findMany', args: { where: {} } }), next);
+      await softDeleteMiddleware(
+        params({ model: 'DynamicConfig', action: 'findMany', args: { where: {} } }),
+        next,
+      );
 
       expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({ args: expect.objectContaining({ where: {} }) })
+        expect.objectContaining({ args: expect.objectContaining({ where: {} }) }),
       );
     });
   });
@@ -82,14 +115,20 @@ describe('softDeleteMiddleware', () => {
   describe('unaffected actions pass through unchanged', () => {
     it('passes create through without modification', async () => {
       const next = makeNext();
-      await softDeleteMiddleware(params({ action: 'create', args: { data: { email: 'a@b.com' } } }), next);
+      await softDeleteMiddleware(
+        params({ action: 'create', args: { data: { email: 'a@b.com' } } }),
+        next,
+      );
 
       expect(next).toHaveBeenCalledWith(expect.objectContaining({ action: 'create' }));
     });
 
     it('passes update through without modification', async () => {
       const next = makeNext();
-      await softDeleteMiddleware(params({ action: 'update', args: { where: { id: '1' }, data: { email: 'new@b.com' } } }), next);
+      await softDeleteMiddleware(
+        params({ action: 'update', args: { where: { id: '1' }, data: { email: 'new@b.com' } } }),
+        next,
+      );
 
       expect(next).toHaveBeenCalledWith(expect.objectContaining({ action: 'update' }));
     });

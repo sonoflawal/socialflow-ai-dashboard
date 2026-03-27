@@ -35,7 +35,9 @@ export async function listOrganizations(req: AuthRequest, res: Response): Promis
     include: { organization: true },
   });
 
-  res.json(memberships.map((m: typeof memberships[number]) => ({ ...m.organization, role: m.role })));
+  res.json(
+    memberships.map((m: (typeof memberships)[number]) => ({ ...m.organization, role: m.role })),
+  );
 }
 
 /** GET /api/organizations/:orgId — get a single org (must be a member) */
@@ -44,7 +46,11 @@ export async function getOrganization(req: AuthRequest, res: Response): Promise<
 
   const membership = await prisma.organizationMember.findUnique({
     where: { organizationId_userId: { organizationId: orgId, userId: req.userId! } },
-    include: { organization: { include: { members: { include: { user: { select: { id: true, email: true } } } } } } },
+    include: {
+      organization: {
+        include: { members: { include: { user: { select: { id: true, email: true } } } } },
+      },
+    },
   });
 
   if (!membership) {

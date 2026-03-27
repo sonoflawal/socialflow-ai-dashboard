@@ -1,10 +1,7 @@
 import 'reflect-metadata';
 import { injectable, inject, optional } from 'inversify';
-import { HealthMonitor, HealthMetrics } from './healthMonitor';
-import { createLogger } from '../lib/logger';
+import { HealthMonitor } from './healthMonitor';
 import { TYPES } from '../config/inversify.config';
-
-const logger = createLogger('healthService');
 
 @injectable()
 class HealthService {
@@ -24,7 +21,7 @@ class HealthService {
    */
   private async simulateCheck(
     serviceName: string,
-    baseLatency: number
+    baseLatency: number,
   ): Promise<{ status: string; latency: number; lastChecked: string; errorRate: number }> {
     const latency = baseLatency + Math.floor(Math.random() * 20);
     // Simulate delay
@@ -89,8 +86,8 @@ class HealthService {
             errorRate: metric.errorRate,
             consecutiveFailures: this.failureCounters.get(service) || 0,
             lastChecked: metric.lastChecked,
-          })
-        )
+          }),
+        ),
       );
     }
 

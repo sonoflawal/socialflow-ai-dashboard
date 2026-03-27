@@ -48,7 +48,9 @@ function createInstrumentedPrisma(): PrismaClient {
   client.$use(async (params, next) => {
     if (!params.model || !ORG_SCOPED_MODELS.has(params.model)) return next(params);
 
-    const orgId: string | undefined = (params.args as Record<string, unknown>)?.__orgId as string | undefined;
+    const orgId: string | undefined = (params.args as Record<string, unknown>)?.__orgId as
+      | string
+      | undefined;
     if (!orgId) return next(params);
 
     // Remove the injected __orgId sentinel before forwarding
@@ -57,7 +59,15 @@ function createInstrumentedPrisma(): PrismaClient {
     }
 
     const readActions = ['findUnique', 'findFirst', 'findMany', 'count', 'aggregate', 'groupBy'];
-    const writeActions = ['create', 'createMany', 'update', 'updateMany', 'upsert', 'delete', 'deleteMany'];
+    const writeActions = [
+      'create',
+      'createMany',
+      'update',
+      'updateMany',
+      'upsert',
+      'delete',
+      'deleteMany',
+    ];
 
     if (readActions.includes(params.action)) {
       params.args = params.args ?? {};
@@ -67,7 +77,10 @@ function createInstrumentedPrisma(): PrismaClient {
         params.args.data = { ...(params.args.data ?? {}), organizationId: orgId };
       } else if (params.action === 'createMany') {
         const data = Array.isArray(params.args.data) ? params.args.data : [params.args.data];
-        params.args.data = data.map((d: Record<string, unknown>) => ({ ...d, organizationId: orgId }));
+        params.args.data = data.map((d: Record<string, unknown>) => ({
+          ...d,
+          organizationId: orgId,
+        }));
       } else {
         params.args.where = { ...(params.args.where ?? {}), organizationId: orgId };
       }

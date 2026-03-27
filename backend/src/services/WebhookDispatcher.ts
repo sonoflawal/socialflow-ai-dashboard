@@ -34,7 +34,7 @@ function sign(secret: string, body: string): string {
 export async function dispatchEvent(
   eventType: WebhookEventType,
   data: Record<string, unknown>,
-  source = 'socialflow'
+  source = 'socialflow',
 ): Promise<void> {
   const subscriptions = await prisma.webhookSubscription.findMany({
     where: { isActive: true, events: { has: eventType } },
@@ -65,7 +65,7 @@ export async function dispatchEvent(
       });
       // Fire-and-forget; errors are caught and persisted inside
       attemptDelivery(delivery.id, sub.url, sub.secret, payload, 1).catch(() => {});
-    })
+    }),
   );
 }
 
@@ -77,7 +77,7 @@ export async function attemptDelivery(
   url: string,
   secret: string,
   payload: string,
-  attempt: number
+  attempt: number,
 ): Promise<void> {
   const signature = sign(secret, payload);
 
@@ -107,7 +107,13 @@ export async function attemptDelivery(
     if (res.ok) {
       await prisma.webhookDelivery.update({
         where: { id: deliveryId },
-        data: { status: 'success', attempts: attempt, responseStatus, responseBody, nextRetryAt: null },
+        data: {
+          status: 'success',
+          attempts: attempt,
+          responseStatus,
+          responseBody,
+          nextRetryAt: null,
+        },
       });
       logger.info(`Delivery ${deliveryId} succeeded`, { attempt, url });
       return;
@@ -169,8 +175,8 @@ export async function retryPendingDeliveries(): Promise<void> {
         d.subscription.url,
         d.subscription.secret,
         d.payload,
-        d.attempts + 1
-      ).catch(() => {})
-    )
+        d.attempts + 1,
+      ).catch(() => {}),
+    ),
   );
 }

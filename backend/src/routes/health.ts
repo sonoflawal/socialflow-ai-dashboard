@@ -1,6 +1,10 @@
 import 'reflect-metadata';
 import { Router } from 'express';
-import { getHealthService, getHealthMonitor, getAlertConfigService } from '../services/serviceFactory';
+import {
+  getHealthService,
+  getHealthMonitor,
+  getAlertConfigService,
+} from '../services/serviceFactory';
 
 const router = Router();
 
@@ -64,7 +68,7 @@ router.get('/config', (req, res) => {
     const alertConfigService = getAlertConfigService();
     const services = ['database', 'redis', 's3', 'twitter', 'youtube', 'facebook'];
     const config = Object.fromEntries(
-      services.map((service) => [service, alertConfigService.getConfig(service)])
+      services.map((service) => [service, alertConfigService.getConfig(service)]),
     );
     res.json(config);
   } catch (error) {

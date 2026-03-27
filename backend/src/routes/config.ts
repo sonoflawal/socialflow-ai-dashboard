@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { dynamicConfigService, ConfigKey, ConfigType } from '../services/DynamicConfigService';
+import { dynamicConfigService, ConfigType } from '../services/DynamicConfigService';
 import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -13,7 +13,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const status = dynamicConfigService.getStatus();
     const configs: Record<string, any> = {};
-    
+
     for (const key of status.cachedKeys) {
       configs[key] = dynamicConfigService.get(key);
     }

@@ -8,23 +8,13 @@ import { CorsOptions } from 'cors';
  *   - prod:    production domains only
  */
 const ALLOWED_ORIGINS: Record<string, string[]> = {
-  local: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:3000',
-  ],
-  staging: [
-    'https://staging.socialflow.app',
-  ],
-  prod: [
-    'https://socialflow.app',
-    'https://www.socialflow.app',
-  ],
+  local: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
+  staging: ['https://staging.socialflow.app'],
+  prod: ['https://socialflow.app', 'https://www.socialflow.app'],
 };
 
 const env = process.env.NODE_ENV ?? 'local';
-const allowedOrigins: string[] =
-  ALLOWED_ORIGINS[env] ?? ALLOWED_ORIGINS.local;
+const allowedOrigins: string[] = ALLOWED_ORIGINS[env] ?? ALLOWED_ORIGINS.local;
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {

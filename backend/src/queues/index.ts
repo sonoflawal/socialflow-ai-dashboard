@@ -1,5 +1,5 @@
 // Queue exports
-export { queueManager, QueueManager, redisConnection } from "./queueManager";
+export { queueManager, QueueManager, redisConnection } from './queueManager';
 export {
   emailQueue,
   sendEmail,
@@ -14,7 +14,7 @@ export {
   EMAIL_QUEUE_NAME,
   EmailJobData,
   BulkEmailJobData,
-} from "./emailQueue";
+} from './emailQueue';
 export {
   payoutQueue,
   processPayout,
@@ -29,7 +29,7 @@ export {
   PAYOUT_QUEUE_NAME,
   PayoutJobData,
   ScheduledPayoutData,
-} from "./payoutQueue";
+} from './payoutQueue';
 export {
   syncQueue,
   syncAccount,
@@ -47,7 +47,7 @@ export {
   SYNC_QUEUE_NAME,
   BlockchainSyncJobData,
   ContractSyncJobData,
-} from "./syncQueue";
+} from './syncQueue';
 export {
   cohortQueue,
   enqueueCohortCompute,
@@ -56,7 +56,7 @@ export {
   getCohortQueueStats,
   COHORT_QUEUE_NAME,
   CohortJobData,
-} from "./cohortQueue";
+} from './cohortQueue';
 export {
   notificationQueue,
   sendNotification,
@@ -76,4 +76,4 @@ export {
   NotificationType,
   NotificationJobData,
   BulkNotificationData,
-} from "./notificationQueue";
+} from './notificationQueue';

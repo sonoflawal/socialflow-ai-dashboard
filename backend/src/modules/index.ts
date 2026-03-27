@@ -1,9 +1,14 @@
-import { Router } from 'express';
 import { healthRoutes } from './health';
 import { authRoutes } from './auth';
 import { organizationRoutes } from './organization';
 import { webhookRoutes } from './webhook';
 import { analyticsRoutes } from './analytics';
+import socialYoutubeRoutes from './social/routes.youtube';
+import socialFacebookRoutes from './social/routes.facebook';
+import videoRoutes from './content/routes.video';
+import translationRoutes from './content/routes.translation';
+import ttsRoutes from './content/routes.tts';
+import billingRoutes from './billing/routes';
 
 /**
  * Module Registry
@@ -27,16 +32,16 @@ export function registerModules(app: any): void {
   app.use('/api/analytics', analyticsRoutes);
 
   // Social module routes (YouTube, Facebook)
-  app.use('/api/youtube', require('./social/routes.youtube').default);
-  app.use('/api/facebook', require('./social/routes.facebook').default);
+  app.use('/api/youtube', socialYoutubeRoutes);
+  app.use('/api/facebook', socialFacebookRoutes);
 
   // Content module routes
-  app.use('/api/video', require('./content/routes.video').default);
-  app.use('/api/translation', require('./content/routes.translation').default);
-  app.use('/api/tts', require('./content/routes.tts').default);
+  app.use('/api/video', videoRoutes);
+  app.use('/api/translation', translationRoutes);
+  app.use('/api/tts', ttsRoutes);
 
   // Billing module
-  app.use('/api/billing', require('./billing/routes').default);
+  app.use('/api/billing', billingRoutes);
 }
 
 export * from './health';

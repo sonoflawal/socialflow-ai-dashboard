@@ -43,7 +43,8 @@ router.post('/provision', authMiddleware, async (req: AuthRequest, res: Response
  */
 router.get('/subscription', authMiddleware, (req: AuthRequest, res: Response) => {
   const sub = SubscriptionStore.findByUserId(req.userId!);
-  if (!sub) return res.status(404).json({ message: 'No subscription found. Call /provision first.' });
+  if (!sub)
+    return res.status(404).json({ message: 'No subscription found. Call /provision first.' });
   return res.json(sub);
 });
 
@@ -67,13 +68,18 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     const { priceId, successUrl, cancelUrl } = req.body;
     try {
-      const url = await billingService.createCheckoutSession(req.userId!, priceId, successUrl, cancelUrl);
+      const url = await billingService.createCheckoutSession(
+        req.userId!,
+        priceId,
+        successUrl,
+        cancelUrl,
+      );
       return res.json({ url });
     } catch (err) {
       logger.error('Checkout session failed', { error: (err as Error).message });
       return res.status(502).json({ message: (err as Error).message });
     }
-  }
+  },
 );
 
 /**
@@ -93,7 +99,7 @@ router.post(
       logger.error('Portal session failed', { error: (err as Error).message });
       return res.status(502).json({ message: (err as Error).message });
     }
-  }
+  },
 );
 
 /**

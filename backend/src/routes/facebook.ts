@@ -35,18 +35,18 @@ router.get('/callback', async (req: Request, res: Response) => {
 
   try {
     // Exchange code for user access token
-    const { userAccessToken, expiresAt } = await facebookService.exchangeCode(code);
-    
+    const { userAccessToken, expiresAt: _expiresAt } = await facebookService.exchangeCode(code);
+
     // Get long-lived token for better token management
     const longLivedToken = await facebookService.getLongLivedUserToken(userAccessToken);
-    
+
     // Get the user's pages
     const pages = await facebookService.getUserPages(longLivedToken.accessToken);
-    
+
     return res.json({
       message: 'Facebook connected successfully.',
       expiresAt: longLivedToken.expiresAt,
-      pages: pages.map(page => ({
+      pages: pages.map((page) => ({
         id: page.id,
         name: page.name,
         category: page.category,
@@ -73,7 +73,7 @@ router.get('/pages', async (req: Request, res: Response) => {
   try {
     const pages = await facebookService.getUserPages(accessToken);
     return res.json({
-      pages: pages.map(page => ({
+      pages: pages.map((page) => ({
         id: page.id,
         name: page.name,
         category: page.category,

@@ -31,10 +31,10 @@ export type AuditAction =
 
 export interface AuditLog {
   id: string;
-  actorId: string;           // userId who performed the action
+  actorId: string; // userId who performed the action
   action: AuditAction;
-  resourceType?: string;     // e.g. "post", "user", "organization"
-  resourceId?: string;       // ID of the affected resource
+  resourceType?: string; // e.g. "post", "user", "organization"
+  resourceId?: string; // ID of the affected resource
   metadata?: Record<string, unknown>;
   ip?: string;
   userAgent?: string;
@@ -54,7 +54,10 @@ export const AuditLogStore = {
   },
 
   forActor: (actorId: string, limit = 100): AuditLog[] =>
-    logs.filter((l) => l.actorId === actorId).slice(-limit).reverse(),
+    logs
+      .filter((l) => l.actorId === actorId)
+      .slice(-limit)
+      .reverse(),
 
   forResource: (resourceType: string, resourceId: string): AuditLog[] =>
     logs.filter((l) => l.resourceType === resourceType && l.resourceId === resourceId).reverse(),

@@ -11,7 +11,7 @@ export function getHealthMonitor(): HealthMonitor {
 }
 
 export function initializeHealthMonitoring(): void {
-  const monitor = getHealthMonitor();
-  const healthService = container.get<HealthService>(TYPES.HealthService);
+  const _monitor = getHealthMonitor();
+  const _healthService = container.get<HealthService>(TYPES.HealthService);
   logger.info('Health monitoring initialized with DI container');
 }

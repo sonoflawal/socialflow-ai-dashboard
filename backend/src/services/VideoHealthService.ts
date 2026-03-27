@@ -12,12 +12,12 @@ class VideoHealthService {
       const { stdout } = await execAsync('ffmpeg -version');
       const versionMatch = stdout.match(/ffmpeg version ([^\s]+)/);
       const version = versionMatch ? versionMatch[1] : 'unknown';
-      
+
       return {
         available: true,
         version,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         available: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -34,11 +34,11 @@ class VideoHealthService {
 
     try {
       const { stdout } = await execAsync('ffmpeg -codecs');
-      
+
       for (const codec of requiredCodecs) {
         codecs[codec] = stdout.includes(codec);
       }
-    } catch (error) {
+    } catch (_error) {
       // If ffmpeg -codecs fails, mark all as unavailable
       for (const codec of requiredCodecs) {
         codecs[codec] = false;
@@ -52,13 +52,10 @@ class VideoHealthService {
    * Get comprehensive video service health status
    */
   public async getHealthStatus() {
-    const [ffmpegStatus, codecStatus] = await Promise.all([
-      this.checkFFmpeg(),
-      this.checkCodecs(),
-    ]);
+    const [ffmpegStatus, codecStatus] = await Promise.all([this.checkFFmpeg(), this.checkCodecs()]);
 
-    const isHealthy = ffmpegStatus.available && 
-                     Object.values(codecStatus.codecs).every(available => available);
+    const isHealthy =
+      ffmpegStatus.available && Object.values(codecStatus.codecs).every((available) => available);
 
     return {
       status: isHealthy ? 'healthy' : 'unhealthy',

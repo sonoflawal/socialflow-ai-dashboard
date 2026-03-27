@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import app from './app';
-import { container } from './config/inversify.config';
 import { SocketService } from './services/SocketService';
 import { initializeWorkers } from './jobs/workers';
 import { queueManager } from './queues/queueManager';
@@ -13,7 +12,6 @@ import { startHealthMonitoringJob, stopHealthMonitoringJob } from './jobs/health
 import { initializeHealthMonitoring } from './monitoring/healthMonitoringInstance';
 import { createLogger } from './lib/logger';
 import { prisma } from './lib/prisma';
-import { startWebhookWorker } from './queues/WebhookQueue';
 import { Worker } from 'bullmq';
 import { Server } from 'http';
 

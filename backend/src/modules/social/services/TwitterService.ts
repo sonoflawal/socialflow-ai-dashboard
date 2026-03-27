@@ -31,7 +31,7 @@ export interface TwitterPostRequest {
 
 /**
  * TwitterService - Wrapper for Twitter API with circuit breaker protection
- * 
+ *
  * Provides resilient Twitter operations with automatic failure handling.
  * Prevents cascading failures when Twitter API is down or rate-limited.
  */
@@ -64,7 +64,7 @@ class TwitterService {
         const response = await fetch(`${this.API_BASE}/tweets`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${this.bearerToken}`,
+            Authorization: `Bearer ${this.bearerToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(request),
@@ -81,7 +81,7 @@ class TwitterService {
       async () => {
         // Fallback: Queue for later or throw
         throw new Error('Twitter API temporarily unavailable. Post has been queued for retry.');
-      }
+      },
     );
   }
 
@@ -100,9 +100,9 @@ class TwitterService {
           `${this.API_BASE}/users/${userId}/tweets?max_results=${maxResults}&tweet.fields=created_at,public_metrics`,
           {
             headers: {
-              'Authorization': `Bearer ${this.bearerToken}`,
+              Authorization: `Bearer ${this.bearerToken}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -116,7 +116,7 @@ class TwitterService {
         // Fallback: return empty array
         console.warn('Twitter circuit breaker open, returning empty timeline');
         return [];
-      }
+      },
     );
   }
 
@@ -135,9 +135,9 @@ class TwitterService {
           `${this.API_BASE}/users/by/username/${username}?user.fields=profile_image_url`,
           {
             headers: {
-              'Authorization': `Bearer ${this.bearerToken}`,
+              Authorization: `Bearer ${this.bearerToken}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -151,7 +151,7 @@ class TwitterService {
         // Fallback: return null
         console.warn('Twitter circuit breaker open, returning null user');
         return null;
-      }
+      },
     );
   }
 
@@ -170,9 +170,9 @@ class TwitterService {
           `${this.API_BASE}/tweets/search/recent?query=${encodeURIComponent(query)}&max_results=${maxResults}&tweet.fields=created_at,public_metrics`,
           {
             headers: {
-              'Authorization': `Bearer ${this.bearerToken}`,
+              Authorization: `Bearer ${this.bearerToken}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -186,7 +186,7 @@ class TwitterService {
         // Fallback: return empty array
         console.warn('Twitter circuit breaker open, returning empty search results');
         return [];
-      }
+      },
     );
   }
 
@@ -204,12 +204,12 @@ class TwitterService {
         async () => {
           const response = await fetch(`${this.API_BASE}/users/me`, {
             headers: {
-              'Authorization': `Bearer ${this.bearerToken}`,
+              Authorization: `Bearer ${this.bearerToken}`,
             },
           });
           return response.ok;
         },
-        async () => false
+        async () => false,
       );
     } catch {
       return false;

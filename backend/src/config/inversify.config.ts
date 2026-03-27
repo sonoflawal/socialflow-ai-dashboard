@@ -11,7 +11,7 @@ export const TYPES = {
   HealthMonitor: Symbol.for('HealthMonitor'),
   NotificationManager: Symbol.for('NotificationManager'),
   AlertConfigService: Symbol.for('AlertConfigService'),
-  
+
   // Existing services
   TranslationService: Symbol.for('TranslationService'),
   PredictiveService: Symbol.for('PredictiveService'),

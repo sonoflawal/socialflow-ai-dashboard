@@ -7,7 +7,7 @@ import { EmailJobData } from '../queues/emailQueue';
  * Handles sending emails with retry logic and error handling
  */
 export async function processEmailJob(job: Job<EmailJobData>) {
-  const { to, subject, body, html, attachments, metadata } = job.data;
+  const { to, subject, body, html: _html, attachments: _attachments, metadata } = job.data;
 
   console.log(`[EmailJob] Processing job ${job.id} - sending to ${to}`);
 

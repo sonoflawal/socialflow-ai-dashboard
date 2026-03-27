@@ -1,7 +1,13 @@
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import fs from 'fs/promises';
-import { TranscodingJob, VideoQuality, VideoFormat, TranscodedOutput, TranscodingOptions } from '../types/video';
+import {
+  TranscodingJob,
+  VideoQuality,
+  VideoFormat,
+  TranscodedOutput,
+  TranscodingOptions,
+} from '../types/video';
 import { v4 as uuidv4 } from 'uuid';
 import { createLogger } from '../lib/logger';
 import { eventBus } from '../lib/eventBus';
@@ -31,7 +37,7 @@ class VideoService {
   public async createTranscodingJob(
     inputPath: string,
     options: TranscodingOptions = {},
-    userId?: string
+    userId?: string,
   ): Promise<string> {
     const jobId = uuidv4();
     const outputDir = options.outputDir || path.join(path.dirname(inputPath), 'transcoded', jobId);
@@ -120,7 +126,7 @@ class VideoService {
   private async transcodeVideo(
     job: TranscodingJob,
     quality: VideoQuality,
-    format: VideoFormat
+    format: VideoFormat,
   ): Promise<TranscodedOutput> {
     const outputFilename = `video_${quality.name}.${format.extension}`;
     const outputPath = path.join(job.outputDir, outputFilename);
@@ -167,7 +173,12 @@ class VideoService {
   /**
    * Update job status
    */
-  private updateJobStatus(jobId: string, status: TranscodingJob['status'], error?: string, userId?: string): void {
+  private updateJobStatus(
+    jobId: string,
+    status: TranscodingJob['status'],
+    error?: string,
+    userId?: string,
+  ): void {
     const job = this.jobs.get(jobId);
     if (job) {
       job.status = status;

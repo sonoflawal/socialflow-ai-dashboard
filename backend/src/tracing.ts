@@ -48,15 +48,13 @@ function buildExporter(): SpanExporter {
     }
 
     case 'otlp': {
-      const endpoint =
-        process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318/v1/traces';
+      const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318/v1/traces';
       return new OTLPTraceExporter({ url: endpoint });
     }
 
     case 'jaeger':
     default: {
-      const endpoint =
-        process.env.JAEGER_ENDPOINT ?? 'http://localhost:14268/api/traces';
+      const endpoint = process.env.JAEGER_ENDPOINT ?? 'http://localhost:14268/api/traces';
       return new JaegerExporter({ endpoint });
     }
   }

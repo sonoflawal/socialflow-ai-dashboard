@@ -1,16 +1,14 @@
-import { Job } from "bullmq";
-import { cohortService } from "../services/CohortService";
-import { createLogger } from "../lib/logger";
-import { CohortJobData } from "../queues/cohortQueue";
+import { Job } from 'bullmq';
+import { cohortService } from '../services/CohortService';
+import { createLogger } from '../lib/logger';
+import { CohortJobData } from '../queues/cohortQueue';
 
-const logger = createLogger("cohort-job");
+const logger = createLogger('cohort-job');
 
-export async function processCohortJob(
-  job: Job<CohortJobData>,
-): Promise<object> {
-  const { organizationId, triggeredBy = "manual" } = job.data;
+export async function processCohortJob(job: Job<CohortJobData>): Promise<object> {
+  const { organizationId, triggeredBy = 'manual' } = job.data;
 
-  logger.info("Starting cohort computation job", {
+  logger.info('Starting cohort computation job', {
     jobId: job.id,
     organizationId,
     triggeredBy,
@@ -24,7 +22,7 @@ export async function processCohortJob(
   const summary = {
     jobId: job.id,
     triggeredBy,
-    organizationId: organizationId ?? "global",
+    organizationId: organizationId ?? 'global',
     totalUsers: result.totalUsers,
     segments: result.segments.map((s) => ({
       cohort: s.cohort,
@@ -33,6 +31,6 @@ export async function processCohortJob(
     computedAt: result.computedAt.toISOString(),
   };
 
-  logger.info("Cohort computation job complete", summary);
+  logger.info('Cohort computation job complete', summary);
   return summary;
 }

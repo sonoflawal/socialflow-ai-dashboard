@@ -40,7 +40,10 @@ export const syncQueue = queueManager.createQueue(SYNC_QUEUE_NAME, {
 /**
  * Sync blockchain account data
  */
-export async function syncAccount(accountId: string, metadata?: BlockchainSyncJobData['metadata']): Promise<string | undefined> {
+export async function syncAccount(
+  accountId: string,
+  metadata?: BlockchainSyncJobData['metadata'],
+): Promise<string | undefined> {
   const data: BlockchainSyncJobData = {
     type: 'account',
     accountId,
@@ -59,7 +62,7 @@ export async function syncTransactions(
   accountId: string,
   startBlock?: number,
   endBlock?: number,
-  metadata?: BlockchainSyncJobData['metadata']
+  metadata?: BlockchainSyncJobData['metadata'],
 ): Promise<string | undefined> {
   const data: BlockchainSyncJobData = {
     type: 'transactions',
@@ -77,7 +80,10 @@ export async function syncTransactions(
 /**
  * Sync account balances
  */
-export async function syncBalances(accountId: string, metadata?: BlockchainSyncJobData['metadata']): Promise<string | undefined> {
+export async function syncBalances(
+  accountId: string,
+  metadata?: BlockchainSyncJobData['metadata'],
+): Promise<string | undefined> {
   const data: BlockchainSyncJobData = {
     type: 'balances',
     accountId,
@@ -92,7 +98,10 @@ export async function syncBalances(accountId: string, metadata?: BlockchainSyncJ
 /**
  * Full blockchain sync
  */
-export async function fullSync(accountId: string, metadata?: BlockchainSyncJobData['metadata']): Promise<string | undefined> {
+export async function fullSync(
+  accountId: string,
+  metadata?: BlockchainSyncJobData['metadata'],
+): Promise<string | undefined> {
   const data: BlockchainSyncJobData = {
     type: 'full',
     accountId,
@@ -141,7 +150,7 @@ export async function batchSyncAccounts(accountIds: string[]): Promise<string[]>
 export async function schedulePeriodicSync(
   jobName: string,
   data: any,
-  cronExpression: string
+  cronExpression: string,
 ): Promise<string | undefined> {
   return await queueManager.addJob(SYNC_QUEUE_NAME, jobName, data, {
     repeat: {

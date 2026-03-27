@@ -1,11 +1,8 @@
 import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
-import { createLogger } from '../lib/logger';
 import { NotificationManager } from './notificationProvider';
 import { alertConfigService } from './alertConfigService';
 import { TYPES } from '../config/inversify.config';
-
-const logger = createLogger('healthMonitor');
 
 export interface HealthMetrics {
   service: string;
@@ -32,7 +29,10 @@ export class HealthMonitor {
     await this.evaluateThresholds(metric, previous);
   }
 
-  private async evaluateThresholds(current: HealthMetrics, previous?: HealthMetrics): Promise<void> {
+  private async evaluateThresholds(
+    current: HealthMetrics,
+    previous?: HealthMetrics,
+  ): Promise<void> {
     const config = alertConfigService.getConfig(current.service);
     if (!config || !config.enabled) return;
 

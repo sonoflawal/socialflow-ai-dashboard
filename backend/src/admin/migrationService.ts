@@ -82,7 +82,9 @@ export const runMigrations = async (
 
   try {
     const applied = new Set(await redis.smembers(ADMIN_MIGRATIONS_SET_KEY));
-    const matchingMigrations = migrations.filter((migration) => !options.name || migration.name === options.name);
+    const matchingMigrations = migrations.filter(
+      (migration) => !options.name || migration.name === options.name,
+    );
     const pending = matchingMigrations.filter((migration) => !applied.has(migration.name));
 
     if (pending.length === 0) {
@@ -111,7 +113,9 @@ export const runMigrations = async (
 
     return {
       executed,
-      skipped: matchingMigrations.filter((migration) => applied.has(migration.name)).map((migration) => migration.name),
+      skipped: matchingMigrations
+        .filter((migration) => applied.has(migration.name))
+        .map((migration) => migration.name),
       dryRun: Boolean(options.dryRun),
     };
   } finally {

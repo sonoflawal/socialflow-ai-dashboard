@@ -1,7 +1,7 @@
-import { createLogger } from "../lib/logger";
-import { dynamicConfigService } from "./DynamicConfigService";
+import { createLogger } from '../lib/logger';
+import { dynamicConfigService } from './DynamicConfigService';
 
-const logger = createLogger("feature-service");
+const logger = createLogger('feature-service');
 
 /**
  * Rollout strategies supported per flag:
@@ -11,7 +11,7 @@ const logger = createLogger("feature-service");
  *  - canary   – enabled for a percentage of users (hash-based, deterministic)
  *  - group    – enabled for specific org/group IDs
  */
-export type RolloutStrategy = "boolean" | "userlist" | "canary" | "group";
+export type RolloutStrategy = 'boolean' | 'userlist' | 'canary' | 'group';
 
 export interface FeatureFlag {
   enabled: boolean;
@@ -31,7 +31,7 @@ export interface FeatureContext {
 }
 
 // Prefix used when storing flags in DynamicConfig table
-const FLAG_PREFIX = "FEATURE_FLAG:";
+const FLAG_PREFIX = 'FEATURE_FLAG:';
 
 export class FeatureService {
   /**
@@ -47,23 +47,23 @@ export class FeatureService {
     if (!flag.enabled) return false;
 
     switch (flag.strategy) {
-      case "boolean":
+      case 'boolean':
         return true;
 
-      case "userlist":
+      case 'userlist':
         if (!ctx.userId) return false;
         return (flag.userIds ?? []).includes(ctx.userId);
 
-      case "group":
+      case 'group':
         if (!ctx.groupId) return false;
         return (flag.groupIds ?? []).includes(ctx.groupId);
 
-      case "canary": {
+      case 'canary': {
         const pct = flag.percentage ?? 0;
         if (pct >= 100) return true;
         if (pct <= 0) return false;
         // Deterministic hash so the same user always gets the same result
-        const seed = ctx.userId ?? ctx.groupId ?? "anonymous";
+        const seed = ctx.userId ?? ctx.groupId ?? 'anonymous';
         return this.hashBucket(flagName, seed) < pct;
       }
 
@@ -79,8 +79,8 @@ export class FeatureService {
    */
   async setFlag(flagName: string, flag: FeatureFlag): Promise<void> {
     const key = `${FLAG_PREFIX}${flagName}`;
-    await dynamicConfigService.set(key, flag, "json", flag.description);
-    logger.info("Feature flag updated", { flagName, flag });
+    await dynamicConfigService.set(key, flag, 'json', flag.description);
+    logger.info('Feature flag updated', { flagName, flag });
   }
 
   /**
@@ -88,8 +88,8 @@ export class FeatureService {
    */
   async deleteFlag(flagName: string): Promise<void> {
     // Set disabled so it propagates cleanly; removal from DB is a bonus
-    await this.setFlag(flagName, { enabled: false, strategy: "boolean" });
-    logger.info("Feature flag disabled", { flagName });
+    await this.setFlag(flagName, { enabled: false, strategy: 'boolean' });
+    logger.info('Feature flag disabled', { flagName });
   }
 
   /**
@@ -117,7 +117,7 @@ export class FeatureService {
   private getFlag(flagName: string): FeatureFlag | null {
     const key = `${FLAG_PREFIX}${flagName}`;
     const value = dynamicConfigService.get<FeatureFlag | null>(key, null);
-    if (!value || typeof value !== "object") return null;
+    if (!value || typeof value !== 'object') return null;
     return value as FeatureFlag;
   }
 

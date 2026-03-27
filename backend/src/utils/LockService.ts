@@ -28,11 +28,7 @@ export const LockService = {
   /**
    * Acquire a lock and execute a function
    */
-  async withLock<T>(
-    key: string,
-    fn: () => Promise<T>,
-    options: LockOptions = {}
-  ): Promise<T> {
+  async withLock<T>(key: string, fn: () => Promise<T>, options: LockOptions = {}): Promise<T> {
     const duration = options.duration || 30000; // 30 seconds default
     const lockKey = `lock:${key}`;
 
@@ -84,7 +80,9 @@ export const LockService = {
       await lock.unlock();
       logger.info(`Lock released manually`);
     } catch (err) {
-      logger.error(`Failed to release lock`, { error: err instanceof Error ? err.message : String(err) });
+      logger.error(`Failed to release lock`, {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   },
 };

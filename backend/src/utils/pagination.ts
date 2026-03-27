@@ -4,51 +4,51 @@ import { z } from 'zod';
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
 export const pageLimitSchema = z.object({
-  page:  z.coerce.number().int().min(1).default(1),
+  page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export const cursorSchema = z.object({
   cursor: z.string().optional(),
-  limit:  z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface PageLimitParams {
-  page:  number;
+  page: number;
   limit: number;
 }
 
 export interface CursorParams {
   cursor?: string;
-  limit:   number;
+  limit: number;
 }
 
 export interface PaginatedResponse<T> {
-  data:       T[];
+  data: T[];
   pagination: PageMeta | CursorMeta;
 }
 
 export interface PageMeta {
-  total:    number;
-  page:     number;
-  limit:    number;
-  pages:    number;
-  hasNext:  boolean;
-  hasPrev:  boolean;
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
   links: {
-    self:  string;
-    next:  string | null;
-    prev:  string | null;
+    self: string;
+    next: string | null;
+    prev: string | null;
     first: string;
-    last:  string;
+    last: string;
   };
 }
 
 export interface CursorMeta {
-  limit:      number;
-  hasNext:    boolean;
+  limit: number;
+  hasNext: boolean;
   nextCursor: string | null;
   links: {
     self: string;
@@ -89,7 +89,11 @@ export function toSkipTake(params: PageLimitParams): { skip: number; take: numbe
  * Build Prisma cursor/take args from cursor params.
  * Fetches limit+1 to detect if there's a next page.
  */
-export function toCursorArgs(params: CursorParams): { cursor?: { id: string }; take: number; skip?: number } {
+export function toCursorArgs(params: CursorParams): {
+  cursor?: { id: string };
+  take: number;
+  skip?: number;
+} {
   return {
     ...(params.cursor ? { cursor: { id: params.cursor }, skip: 1 } : {}),
     take: params.limit + 1, // fetch one extra to detect next page
@@ -115,26 +119,26 @@ export function buildPageResponse<T>(
   total: number,
   params: PageLimitParams,
 ): PaginatedResponse<T> {
-  const pages   = Math.ceil(total / params.limit) || 1;
+  const pages = Math.ceil(total / params.limit) || 1;
   const hasNext = params.page < pages;
   const hasPrev = params.page > 1;
-  const base    = buildBaseUrl(req);
+  const base = buildBaseUrl(req);
 
   return {
     data,
     pagination: {
       total,
-      page:    params.page,
-      limit:   params.limit,
+      page: params.page,
+      limit: params.limit,
       pages,
       hasNext,
       hasPrev,
       links: {
-        self:  `${base}page=${params.page}&limit=${params.limit}`,
-        next:  hasNext ? `${base}page=${params.page + 1}&limit=${params.limit}` : null,
-        prev:  hasPrev ? `${base}page=${params.page - 1}&limit=${params.limit}` : null,
+        self: `${base}page=${params.page}&limit=${params.limit}`,
+        next: hasNext ? `${base}page=${params.page + 1}&limit=${params.limit}` : null,
+        prev: hasPrev ? `${base}page=${params.page - 1}&limit=${params.limit}` : null,
         first: `${base}page=1&limit=${params.limit}`,
-        last:  `${base}page=${pages}&limit=${params.limit}`,
+        last: `${base}page=${pages}&limit=${params.limit}`,
       },
     },
   };
@@ -150,15 +154,15 @@ export function buildCursorResponse<T extends { id: string }>(
   rawItems: T[],
   params: CursorParams,
 ): PaginatedResponse<T> {
-  const hasNext    = rawItems.length > params.limit;
-  const data       = hasNext ? rawItems.slice(0, params.limit) : rawItems;
+  const hasNext = rawItems.length > params.limit;
+  const data = hasNext ? rawItems.slice(0, params.limit) : rawItems;
   const nextCursor = hasNext ? data[data.length - 1].id : null;
-  const base       = buildBaseUrl(req);
+  const base = buildBaseUrl(req);
 
   return {
     data,
     pagination: {
-      limit:      params.limit,
+      limit: params.limit,
       hasNext,
       nextCursor,
       links: {

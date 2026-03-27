@@ -12,7 +12,7 @@ const logger = createLogger('unitOfWorkExample');
 export async function exampleCreateUserWithOrganization(
   prisma: PrismaClient,
   userData: any,
-  orgData: any
+  orgData: any,
 ) {
   const unitOfWork = new UnitOfWork(prisma);
 
@@ -52,7 +52,7 @@ export async function exampleCreateUserWithSubscription(
   prisma: PrismaClient,
   userData: any,
   orgData: any,
-  subscriptionData: any
+  subscriptionData: any,
 ) {
   const unitOfWork = new UnitOfWork(prisma);
 
@@ -99,7 +99,7 @@ export async function exampleUpdateUserAndOrganization(
   userId: string,
   orgId: string,
   userData: any,
-  orgData: any
+  orgData: any,
 ) {
   const unitOfWork = new UnitOfWork(prisma);
 
@@ -132,7 +132,7 @@ export async function exampleUpdateUserAndOrganization(
  */
 export async function exampleMultipleOperations(
   prisma: PrismaClient,
-  operations: Array<(tx: PrismaClient) => Promise<any>>
+  operations: Array<(tx: PrismaClient) => Promise<any>>,
 ) {
   const unitOfWork = new UnitOfWork(prisma);
 

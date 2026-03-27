@@ -34,10 +34,7 @@ export class UnitOfWork {
    * Execute a callback within a transaction context
    * All database operations are atomic - either all succeed or all rollback
    */
-  async execute<T>(
-    callback: UnitOfWorkCallback<T>,
-    repositories?: IRepository
-  ): Promise<T> {
+  async execute<T>(callback: UnitOfWorkCallback<T>, repositories?: IRepository): Promise<T> {
     try {
       logger.debug('Starting Unit of Work transaction');
 
@@ -63,9 +60,7 @@ export class UnitOfWork {
   /**
    * Execute multiple operations in a single transaction
    */
-  async executeMultiple<T>(
-    operations: Array<(tx: PrismaClient) => Promise<T>>
-  ): Promise<T[]> {
+  async executeMultiple<T>(operations: Array<(tx: PrismaClient) => Promise<T>>): Promise<T[]> {
     try {
       logger.debug('Starting multi-operation Unit of Work transaction');
 

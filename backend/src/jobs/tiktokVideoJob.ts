@@ -40,9 +40,7 @@ const getQueue = (): Queue => {
 /**
  * Enqueue a chunked video upload job.
  */
-export const enqueueTikTokVideoUpload = async (
-  payload: TikTokVideoJobPayload
-): Promise<string> => {
+export const enqueueTikTokVideoUpload = async (payload: TikTokVideoJobPayload): Promise<string> => {
   const q = getQueue();
   const job = await q.add(JOB_NAME, payload, {
     attempts: 3,
@@ -57,9 +55,7 @@ export const enqueueTikTokVideoUpload = async (
 /**
  * Enqueue a status-polling job (called after upload completes).
  */
-export const enqueueTikTokStatusPoll = async (
-  payload: TikTokStatusJobPayload
-): Promise<void> => {
+export const enqueueTikTokStatusPoll = async (payload: TikTokStatusJobPayload): Promise<void> => {
   const q = getQueue();
   await q.add('poll-tiktok-status', payload, {
     delay: 10_000, // first poll after 10 s
@@ -84,7 +80,7 @@ export const startTikTokVideoWorker = (): void => {
         await handleStatusPoll(job);
       }
     },
-    { connection: getRedisConnection() }
+    { connection: getRedisConnection() },
   );
 
   worker.on('completed', (job) => {
@@ -101,8 +97,7 @@ export const startTikTokVideoWorker = (): void => {
 // ─── Handlers ────────────────────────────────────────────────────────────────
 
 async function handleVideoUpload(job: Job): Promise<void> {
-  const { accessToken, filePath, fileSizeBytes, request } =
-    job.data as TikTokVideoJobPayload;
+  const { accessToken, filePath, fileSizeBytes, request } = job.data as TikTokVideoJobPayload;
 
   logger.info('Starting TikTok chunked video upload', { filePath, fileSizeBytes });
 
@@ -114,8 +109,11 @@ async function handleVideoUpload(job: Job): Promise<void> {
   });
 
   // Initiate upload and get upload URL + publishId
-  const { publishId, uploadUrl, chunkSize, totalChunks } =
-    await tiktokService.initiateVideoUpload(accessToken, fileSizeBytes, request);
+  const { publishId, uploadUrl, chunkSize, totalChunks } = await tiktokService.initiateVideoUpload(
+    accessToken,
+    fileSizeBytes,
+    request,
+  );
 
   // Read and upload file in chunks
   const fileHandle = await fs.promises.open(filePath, 'r');

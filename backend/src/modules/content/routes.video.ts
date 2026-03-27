@@ -25,7 +25,13 @@ const upload = multer({
     fileSize: 500 * 1024 * 1024, // 500MB max
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+    const allowedMimes = [
+      'video/mp4',
+      'video/mpeg',
+      'video/quicktime',
+      'video/x-msvideo',
+      'video/webm',
+    ];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -118,10 +124,10 @@ router.get('/health', async (req: Request, res: Response) => {
     const health = await videoHealthService.getHealthStatus();
     const statusCode = health.status === 'healthy' ? 200 : 503;
     res.status(statusCode).json(health);
-  } catch (error) {
-    res.status(500).json({ 
+  } catch (_error) {
+    res.status(500).json({
       status: 'unhealthy',
-      error: 'Failed to check health status'
+      error: 'Failed to check health status',
     });
   }
 });

@@ -1,33 +1,31 @@
-import { queueManager } from "./queueManager";
+import { queueManager } from './queueManager';
 
-export const COHORT_QUEUE_NAME = "cohort";
+export const COHORT_QUEUE_NAME = 'cohort';
 
 export interface CohortJobData {
   organizationId?: string; // omit for global recompute
-  triggeredBy?: "daily" | "weekly" | "manual";
+  triggeredBy?: 'daily' | 'weekly' | 'manual';
 }
 
 export const cohortQueue = queueManager.createQueue(COHORT_QUEUE_NAME, {
   attempts: 3,
-  backoff: { type: "exponential", delay: 5000 },
+  backoff: { type: 'exponential', delay: 5000 },
   removeOnComplete: 50,
   removeOnFail: 100,
 });
 
 /** Enqueue a one-off cohort recompute */
-export async function enqueueCohortCompute(
-  data: CohortJobData = {},
-): Promise<string | undefined> {
-  return queueManager.addJob(COHORT_QUEUE_NAME, "compute-cohorts", data);
+export async function enqueueCohortCompute(data: CohortJobData = {}): Promise<string | undefined> {
+  return queueManager.addJob(COHORT_QUEUE_NAME, 'compute-cohorts', data);
 }
 
 /** Schedule daily cohort recompute (runs at midnight UTC) */
 export async function scheduleDailyCohortJob(): Promise<string | undefined> {
   return queueManager.addJob(
     COHORT_QUEUE_NAME,
-    "compute-cohorts",
-    { triggeredBy: "daily" } satisfies CohortJobData,
-    { repeat: { pattern: "0 0 * * *" } },
+    'compute-cohorts',
+    { triggeredBy: 'daily' } satisfies CohortJobData,
+    { repeat: { pattern: '0 0 * * *' } },
   );
 }
 
@@ -35,9 +33,9 @@ export async function scheduleDailyCohortJob(): Promise<string | undefined> {
 export async function scheduleWeeklyCohortJob(): Promise<string | undefined> {
   return queueManager.addJob(
     COHORT_QUEUE_NAME,
-    "compute-cohorts",
-    { triggeredBy: "weekly" } satisfies CohortJobData,
-    { repeat: { pattern: "0 1 * * 1" } },
+    'compute-cohorts',
+    { triggeredBy: 'weekly' } satisfies CohortJobData,
+    { repeat: { pattern: '0 1 * * 1' } },
   );
 }
 

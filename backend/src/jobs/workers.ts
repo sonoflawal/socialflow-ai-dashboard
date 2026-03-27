@@ -3,7 +3,14 @@ import { Worker } from 'bullmq';
 
 // Email job processor
 async function processEmailJob(job: any) {
-  const { to, subject, body, html, attachments, metadata } = job.data;
+  const {
+    to,
+    subject: _subject,
+    body: _body,
+    html: _html,
+    attachments: _attachments,
+    metadata,
+  } = job.data;
 
   console.log(`Processing email job ${job.id}: sending to ${to}`);
 
@@ -27,7 +34,15 @@ async function processEmailJob(job: any) {
 
 // Payout job processor
 async function processPayoutJob(job: any) {
-  const { groupId, amount, recipient, recipientType, currency, description, metadata } = job.data;
+  const {
+    groupId,
+    amount,
+    recipient,
+    recipientType: _recipientType,
+    currency,
+    description: _description,
+    metadata,
+  } = job.data;
 
   console.log(`Processing payout job ${job.id}: ${amount} ${currency} to ${recipient}`);
 
@@ -79,7 +94,9 @@ async function processSyncAccountJob(job: any) {
 async function processSyncTransactionsJob(job: any) {
   const { accountId, startBlock, endBlock, metadata } = job.data;
 
-  console.log(`Processing transactions sync job ${job.id}: syncing ${accountId} blocks ${startBlock}-${endBlock}`);
+  console.log(
+    `Processing transactions sync job ${job.id}: syncing ${accountId} blocks ${startBlock}-${endBlock}`,
+  );
 
   // Simulate transaction sync
   await new Promise((resolve) => setTimeout(resolve, 400));
@@ -136,7 +153,9 @@ async function processFullSyncJob(job: any) {
 async function processSyncContractJob(job: any) {
   const { contractId, contractType, action, metadata } = job.data;
 
-  console.log(`Processing contract sync job ${job.id}: ${action} ${contractType} contract ${contractId}`);
+  console.log(
+    `Processing contract sync job ${job.id}: ${action} ${contractType} contract ${contractId}`,
+  );
 
   await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -156,7 +175,9 @@ async function processSyncContractJob(job: any) {
 async function processDeployContractJob(job: any) {
   const { contractId, contractType, metadata } = job.data;
 
-  console.log(`Processing contract deploy job ${job.id}: deploying ${contractType} contract ${contractId}`);
+  console.log(
+    `Processing contract deploy job ${job.id}: deploying ${contractType} contract ${contractId}`,
+  );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -174,7 +195,7 @@ async function processDeployContractJob(job: any) {
 
 // Notification job processor
 async function processNotificationJob(job: any) {
-  const { type, recipient, title, message, data, metadata } = job.data;
+  const { type, recipient, title: _title, message: _message, data: _data, metadata } = job.data;
 
   console.log(`Processing notification job ${job.id}: ${type} notification to ${recipient}`);
 
@@ -275,29 +296,33 @@ export function initializeWorkers(): Map<string, Worker> {
   workers.set('payout', payoutWorker);
 
   // Sync workers
-  const syncWorker = queueManager.createWorker('sync', async (job) => {
-    const jobName = job.name;
-    
-    switch (jobName) {
-      case 'sync-account':
-        return processSyncAccountJob(job);
-      case 'sync-transactions':
-        return processSyncTransactionsJob(job);
-      case 'sync-balances':
-        return processSyncBalancesJob(job);
-      case 'full-sync':
-        return processFullSyncJob(job);
-      case 'sync-contract':
-        return processSyncContractJob(job);
-      case 'deploy-contract':
-        return processDeployContractJob(job);
-      default:
-        console.warn(`Unknown sync job type: ${jobName}`);
-        return { success: false, error: 'Unknown job type' };
-    }
-  }, {
-    concurrency: 5,
-  });
+  const syncWorker = queueManager.createWorker(
+    'sync',
+    async (job) => {
+      const jobName = job.name;
+
+      switch (jobName) {
+        case 'sync-account':
+          return processSyncAccountJob(job);
+        case 'sync-transactions':
+          return processSyncTransactionsJob(job);
+        case 'sync-balances':
+          return processSyncBalancesJob(job);
+        case 'full-sync':
+          return processFullSyncJob(job);
+        case 'sync-contract':
+          return processSyncContractJob(job);
+        case 'deploy-contract':
+          return processDeployContractJob(job);
+        default:
+          console.warn(`Unknown sync job type: ${jobName}`);
+          return { success: false, error: 'Unknown job type' };
+      }
+    },
+    {
+      concurrency: 5,
+    },
+  );
   workers.set('sync', syncWorker);
 
   // Notification worker

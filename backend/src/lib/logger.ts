@@ -25,7 +25,7 @@ if (process.env.ELASTICSEARCH_URL) {
   try {
     // Dynamic require so the app still boots if the package isn't installed
     // (e.g. local dev without the dep).
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { ElasticsearchTransport } = require('winston-elasticsearch');
 
     const esTransport = new ElasticsearchTransport({
@@ -35,12 +35,13 @@ if (process.env.ELASTICSEARCH_URL) {
       indexSuffixPattern: 'YYYY.MM.DD',
       clientOpts: {
         node: process.env.ELASTICSEARCH_URL,
-        auth: process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD
-          ? {
-              username: process.env.ELASTICSEARCH_USERNAME,
-              password: process.env.ELASTICSEARCH_PASSWORD,
-            }
-          : undefined,
+        auth:
+          process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD
+            ? {
+                username: process.env.ELASTICSEARCH_USERNAME,
+                password: process.env.ELASTICSEARCH_PASSWORD,
+              }
+            : undefined,
         // Trust self-signed certs in dev/staging; enforce TLS in production
         tls: {
           rejectUnauthorized: process.env.ELASTICSEARCH_TLS_REJECT_UNAUTHORIZED !== 'false',
@@ -61,14 +62,15 @@ if (process.env.ELASTICSEARCH_URL) {
 
     // Surface ES transport errors without crashing the app
     esTransport.on('error', (err: Error) => {
-      // eslint-disable-next-line no-console
       console.error('[logger] Elasticsearch transport error:', err.message);
     });
 
     transports.push(esTransport);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn('[logger] winston-elasticsearch not available, skipping ES transport:', (err as Error).message);
+    console.warn(
+      '[logger] winston-elasticsearch not available, skipping ES transport:',
+      (err as Error).message,
+    );
   }
 }
 
@@ -78,18 +80,17 @@ if (process.env.ELASTICSEARCH_URL) {
 const winstonLogger = winston.createLogger({
   level: process.env.LOG_LEVEL ?? 'info',
   format: isProduction
-    ? winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      )
+    ? winston.format.combine(winston.format.timestamp(), winston.format.json())
     : winston.format.combine(
         winston.format.colorize(),
         winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message, scope, requestId, ...meta }: Record<string, unknown>) => {
-          const reqIdStr = requestId ? ` [${requestId}]` : '';
-          const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-          return `${timestamp} [${scope ?? 'app'}]${reqIdStr} ${level}: ${message}${metaStr}`;
-        }),
+        winston.format.printf(
+          ({ timestamp, level, message, scope, requestId, ...meta }: Record<string, unknown>) => {
+            const reqIdStr = requestId ? ` [${requestId}]` : '';
+            const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+            return `${timestamp} [${scope ?? 'app'}]${reqIdStr} ${level}: ${message}${metaStr}`;
+          },
+        ),
       ),
   transports,
 });
@@ -111,9 +112,9 @@ export interface Logger {
  */
 export const createLogger = (scope: string): Logger => ({
   info: (message, metadata) =>
-    winstonLogger.info(message, { scope, requestId: getRequestId(), ...metadata as object }),
+    winstonLogger.info(message, { scope, requestId: getRequestId(), ...(metadata as object) }),
   warn: (message, metadata) =>
-    winstonLogger.warn(message, { scope, requestId: getRequestId(), ...metadata as object }),
+    winstonLogger.warn(message, { scope, requestId: getRequestId(), ...(metadata as object) }),
   error: (message, metadata) =>
-    winstonLogger.error(message, { scope, requestId: getRequestId(), ...metadata as object }),
+    winstonLogger.error(message, { scope, requestId: getRequestId(), ...(metadata as object) }),
 });

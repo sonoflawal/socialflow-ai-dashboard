@@ -15,7 +15,7 @@ export class SocketService {
   private static instance: SocketService;
   private io?: Server;
 
-  private constructor() { }
+  private constructor() {}
 
   /**
    * Returns the singleton instance of the SocketService
@@ -35,8 +35,8 @@ export class SocketService {
     this.io = new Server(httpServer, {
       cors: {
         origin: '*', // To be restricted in production
-        methods: ['GET', 'POST']
-      }
+        methods: ['GET', 'POST'],
+      },
     });
 
     // Configure Redis Adapter
@@ -49,7 +49,8 @@ export class SocketService {
     // Authenticated connection middleware
     this.io.use((socket: AuthenticatedSocket, next) => {
       // First try to grab token from auth payload, fallback to Authorization header
-      const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(' ')[1];
+      const token =
+        socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(' ')[1];
       if (!token) {
         return next(new Error('Authentication error'));
       }
@@ -58,7 +59,7 @@ export class SocketService {
         const decoded = jwt.verify(token, secret);
         socket.user = decoded;
         next();
-      } catch (err) {
+      } catch (_err) {
         next(new Error('Authentication error'));
       }
     });

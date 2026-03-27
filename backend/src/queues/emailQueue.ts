@@ -64,9 +64,12 @@ export async function sendBulkEmails(emails: EmailJobData[]): Promise<string[]> 
 /**
  * Send scheduled email
  */
-export async function scheduleEmail(data: EmailJobData, scheduledFor: Date): Promise<string | undefined> {
+export async function scheduleEmail(
+  data: EmailJobData,
+  scheduledFor: Date,
+): Promise<string | undefined> {
   const delay = scheduledFor.getTime() - Date.now();
-  
+
   if (delay < 0) {
     throw new Error('Scheduled time must be in the future');
   }
@@ -83,7 +86,7 @@ export async function scheduleEmail(data: EmailJobData, scheduledFor: Date): Pro
  */
 export async function sendEmailWithRetry(
   data: EmailJobData,
-  options: { maxAttempts?: number; delay?: number } = {}
+  options: { maxAttempts?: number; delay?: number } = {},
 ): Promise<string | undefined> {
   // Create queue with custom settings for this email
   const customQueue = queueManager.createQueue(`${EMAIL_QUEUE_NAME}-retry-${Date.now()}`, {
@@ -108,7 +111,7 @@ export async function sendTemplatedEmail(
   to: string,
   templateId: string,
   variables: Record<string, any>,
-  metadata?: EmailJobData['metadata']
+  metadata?: EmailJobData['metadata'],
 ): Promise<string | undefined> {
   const data: EmailJobData = {
     to,

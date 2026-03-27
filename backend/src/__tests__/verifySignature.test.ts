@@ -71,7 +71,9 @@ describe('verifySignature', () => {
     const { res, status, json } = buildRes();
     await middleware(req, res, next);
     expect(status).toHaveBeenCalledWith(401);
-    expect(json).toHaveBeenCalledWith(expect.objectContaining({ code: 'MISSING_SIGNATURE_HEADERS' }));
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 'MISSING_SIGNATURE_HEADERS' }),
+    );
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -166,9 +168,11 @@ describe('rawBodyMiddleware', () => {
     const body = JSON.stringify({ hello: 'world' });
     const chunks = [Buffer.from(body)];
 
-    const handlers: Record<string, Function> = {};
+    const handlers: Record<string, (...args: unknown[]) => void> = {};
     const req = {
-      on: (event: string, cb: Function) => { handlers[event] = cb; },
+      on: (event: string, cb: (...args: unknown[]) => void) => {
+        handlers[event] = cb;
+      },
     } as unknown as Request;
     const res = {} as Response;
 
@@ -183,9 +187,11 @@ describe('rawBodyMiddleware', () => {
   });
 
   it('sets req.body to {} for empty body', (done: jest.DoneCallback) => {
-    const handlers: Record<string, Function> = {};
+    const handlers: Record<string, (...args: unknown[]) => void> = {};
     const req = {
-      on: (event: string, cb: Function) => { handlers[event] = cb; },
+      on: (event: string, cb: (...args: unknown[]) => void) => {
+        handlers[event] = cb;
+      },
     } as unknown as Request;
 
     rawBodyMiddleware(req, {} as Response, () => {

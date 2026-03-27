@@ -1,4 +1,3 @@
-import { TranscodingJob } from '../types/video';
 import { createLogger } from '../lib/logger';
 
 const logger = createLogger('VideoQueue');
@@ -27,7 +26,7 @@ class VideoQueue {
   public async addJob(
     jobId: string,
     processor: () => Promise<void>,
-    priority: number = 0
+    priority: number = 0,
   ): Promise<void> {
     const queueJob: QueueJob = {
       id: jobId,

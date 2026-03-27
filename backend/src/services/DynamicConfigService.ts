@@ -18,7 +18,8 @@ export class DynamicConfigService {
 
   private lastRefreshTimestamp: Date | null = null;
 
-  constructor(private refreshIntervalMs: number = 60000) { // Default 1 minute
+  constructor(private refreshIntervalMs: number = 60000) {
+    // Default 1 minute
     this.refreshCache().catch(console.error);
     this.startPolling();
   }
@@ -28,7 +29,7 @@ export class DynamicConfigService {
    */
   public startPolling(): void {
     if (this.pollingInterval) return;
-    
+
     this.pollingInterval = setInterval(async () => {
       await this.refreshCache();
     }, this.refreshIntervalMs);
@@ -52,21 +53,26 @@ export class DynamicConfigService {
     this.isPollingActive = true;
 
     try {
-      // Note: We use the prisma client. 
+      // Note: We use the prisma client.
       // Ensure the DynamicConfig table exists after the migration.
       const configs = await (prisma as any).dynamicConfig.findMany();
-      
+
       this.cache.clear();
       for (const config of configs) {
         this.cache.set(config.key, this.parseValue(config.value, config.type as ConfigType));
       }
-      
+
       this.lastRefreshTimestamp = new Date();
-      console.log(`[DynamicConfigService] Cache refreshed at ${this.lastRefreshTimestamp.toISOString()}. Loaded ${configs.length} configs.`);
+      console.log(
+        `[DynamicConfigService] Cache refreshed at ${this.lastRefreshTimestamp.toISOString()}. Loaded ${configs.length} configs.`,
+      );
     } catch (error) {
-      // If table doesn't exist yet, we just log it. In a real environment, 
+      // If table doesn't exist yet, we just log it. In a real environment,
       // migrations would handle this before the service starts.
-      console.error('[DynamicConfigService] Failed to refresh config cache:', (error as Error).message);
+      console.error(
+        '[DynamicConfigService] Failed to refresh config cache:',
+        (error as Error).message,
+      );
     } finally {
       this.isPollingActive = false;
     }
@@ -81,7 +87,7 @@ export class DynamicConfigService {
     if (this.cache.has(key)) {
       return this.cache.get(key) as T;
     }
-    
+
     if (defaultValue !== undefined) {
       return defaultValue;
     }
@@ -94,7 +100,12 @@ export class DynamicConfigService {
   /**
    * Sets a configuration value in both database and cache.
    */
-  public async set(key: ConfigKey | string, value: any, type: ConfigType = 'string', description?: string): Promise<void> {
+  public async set(
+    key: ConfigKey | string,
+    value: any,
+    type: ConfigType = 'string',
+    description?: string,
+  ): Promise<void> {
     const stringValue = type === 'json' ? JSON.stringify(value) : String(value);
 
     await (prisma as any).dynamicConfig.upsert({
@@ -120,7 +131,10 @@ export class DynamicConfigService {
         try {
           return JSON.parse(value);
         } catch (e) {
-          console.error(`[DynamicConfigService] Failed to parse JSON value for config: ${value}`, e);
+          console.error(
+            `[DynamicConfigService] Failed to parse JSON value for config: ${value}`,
+            e,
+          );
           return null;
         }
       case 'string':

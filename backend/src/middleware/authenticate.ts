@@ -8,7 +8,11 @@ export interface AuthRequest extends Request {
   user?: { id: string };
 }
 
-export async function authenticate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+export async function authenticate(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ message: 'Missing or malformed Authorization header' });

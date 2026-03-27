@@ -1,7 +1,6 @@
 import CircuitBreaker from 'opossum';
 import {
   CircuitBreakerConfig,
-  DEFAULT_CIRCUIT_CONFIG,
   CIRCUIT_CONFIGS,
   FALLBACK_STRATEGIES,
 } from '../config/circuitBreaker.config';
@@ -32,10 +31,10 @@ export interface CircuitStats {
 
 /**
  * Circuit Breaker Service
- * 
+ *
  * Wraps external API calls with circuit breaker pattern to prevent
  * cascading failures when external services are down.
- * 
+ *
  * Features:
  * - Automatic failure detection and circuit opening
  * - Configurable thresholds per service type
@@ -45,14 +44,14 @@ export interface CircuitStats {
  */
 class CircuitBreakerService {
   private breakers: Map<string, CircuitBreaker> = new Map();
-  private fallbackHandlers: Map<string, Function> = new Map();
+  private fallbackHandlers: Map<string, (...args: unknown[]) => unknown> = new Map();
 
   /**
    * Create or get a circuit breaker for a service
    */
   public getBreaker(
     serviceName: keyof typeof CIRCUIT_CONFIGS,
-    customConfig?: Partial<CircuitBreakerConfig>
+    customConfig?: Partial<CircuitBreakerConfig>,
   ): CircuitBreaker {
     const existingBreaker = this.breakers.get(serviceName);
     if (existingBreaker) {
@@ -64,17 +63,20 @@ class CircuitBreakerService {
       ...customConfig,
     };
 
-    const breaker = new CircuitBreaker(async (fn: Function, ...args: any[]) => {
-      return await fn(...args);
-    }, {
-      timeout: config.timeout,
-      errorThresholdPercentage: config.errorThresholdPercentage,
-      resetTimeout: config.resetTimeout,
-      rollingCountTimeout: config.rollingCountTimeout,
-      rollingCountBuckets: config.rollingCountBuckets,
-      volumeThreshold: config.volumeThreshold,
-      name: config.name,
-    });
+    const breaker = new CircuitBreaker(
+      async (fn: (...args: unknown[]) => unknown, ...args: unknown[]) => {
+        return await fn(...args);
+      },
+      {
+        timeout: config.timeout,
+        errorThresholdPercentage: config.errorThresholdPercentage,
+        resetTimeout: config.resetTimeout,
+        rollingCountTimeout: config.rollingCountTimeout,
+        rollingCountBuckets: config.rollingCountBuckets,
+        volumeThreshold: config.volumeThreshold,
+        name: config.name,
+      },
+    );
 
     // Setup event listeners for monitoring
     this.setupEventListeners(breaker, serviceName);
@@ -89,7 +91,7 @@ class CircuitBreakerService {
   public async execute<T>(
     serviceName: keyof typeof CIRCUIT_CONFIGS,
     fn: () => Promise<T>,
-    fallback?: () => T | Promise<T>
+    fallback?: () => T | Promise<T>,
   ): Promise<T> {
     const breaker = this.getBreaker(serviceName);
 
@@ -111,11 +113,7 @@ class CircuitBreakerService {
       // Use default fallback strategy
       const strategy = FALLBACK_STRATEGIES[serviceName];
       if (strategy?.enabled) {
-        throw new CircuitBreakerError(
-          serviceName,
-          strategy.message,
-          error
-        );
+        throw new CircuitBreakerError(serviceName, strategy.message, error);
       }
 
       throw error;
@@ -127,7 +125,7 @@ class CircuitBreakerService {
    */
   public registerFallback(
     serviceName: keyof typeof CIRCUIT_CONFIGS,
-    handler: Function
+    handler: (...args: unknown[]) => unknown,
   ): void {
     this.fallbackHandlers.set(serviceName, handler);
   }
@@ -157,17 +155,19 @@ class CircuitBreakerService {
    */
   private extractStats(breaker: CircuitBreaker, name: string): CircuitStats {
     const stats = breaker.stats;
-    const latency = breaker.latencyMean ? {
-      mean: breaker.latencyMean || 0,
-      median: stats.latencies?.median || 0,
-      p95: stats.latencies?.p95 || 0,
-      p99: stats.latencies?.p99 || 0,
-    } : {
-      mean: 0,
-      median: 0,
-      p95: 0,
-      p99: 0,
-    };
+    const latency = breaker.latencyMean
+      ? {
+          mean: breaker.latencyMean || 0,
+          median: stats.latencies?.median || 0,
+          p95: stats.latencies?.p95 || 0,
+          p99: stats.latencies?.p99 || 0,
+        }
+      : {
+          mean: 0,
+          median: 0,
+          p95: 0,
+          p99: 0,
+        };
 
     return {
       name,
@@ -250,7 +250,7 @@ class CircuitBreakerService {
    * Reset all circuit breakers
    */
   public resetAll(): void {
-    this.breakers.forEach(breaker => {
+    this.breakers.forEach((breaker) => {
       breaker.close();
       breaker.clearCache();
     });
@@ -260,7 +260,7 @@ class CircuitBreakerService {
    * Shutdown all circuit breakers
    */
   public shutdown(): void {
-    this.breakers.forEach(breaker => {
+    this.breakers.forEach((breaker) => {
       breaker.shutdown();
     });
     this.breakers.clear();
@@ -275,7 +275,7 @@ export class CircuitBreakerError extends Error {
   constructor(
     public serviceName: string,
     message: string,
-    public originalError?: unknown
+    public originalError?: unknown,
   ) {
     super(message);
     this.name = 'CircuitBreakerError';

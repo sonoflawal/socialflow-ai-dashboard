@@ -12,7 +12,7 @@ export const ExportService = {
     organizationId: string,
     startDate: Date,
     endDate: Date,
-    res: Response
+    res: Response,
   ): Promise<void> => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="analytics.csv"');
@@ -79,7 +79,7 @@ export const ExportService = {
     organizationId: string,
     startDate: Date,
     endDate: Date,
-    res: Response
+    res: Response,
   ): Promise<void> => {
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="analytics.jsonl"');
@@ -140,7 +140,7 @@ export const ExportService = {
     organizationId: string,
     startDate: Date,
     endDate: Date,
-    res: Response
+    res: Response,
   ): Promise<void> => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="posts.csv"');
@@ -205,7 +205,7 @@ export const ExportService = {
     organizationId: string,
     startDate: Date,
     endDate: Date,
-    res: Response
+    res: Response,
   ): Promise<void> => {
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="posts.jsonl"');

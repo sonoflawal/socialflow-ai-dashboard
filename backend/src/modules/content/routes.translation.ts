@@ -21,14 +21,14 @@ router.post('/translate', async (req: Request, res: Response) => {
     } = req.body;
 
     if (!text || !targetLanguages || !Array.isArray(targetLanguages)) {
-      return res.status(400).json({ 
-        error: 'Text and targetLanguages array are required' 
+      return res.status(400).json({
+        error: 'Text and targetLanguages array are required',
       });
     }
 
     if (targetLanguages.length === 0) {
-      return res.status(400).json({ 
-        error: 'At least one target language is required' 
+      return res.status(400).json({
+        error: 'At least one target language is required',
       });
     }
 
@@ -84,8 +84,9 @@ router.post('/detect', async (req: Request, res: Response) => {
 
     res.json({
       detectedLanguage: result.sourceLanguage,
-      languageName: translationService.getSupportedLanguages()
-        .find(l => l.code === result.sourceLanguage)?.name || result.sourceLanguage,
+      languageName:
+        translationService.getSupportedLanguages().find((l) => l.code === result.sourceLanguage)
+          ?.name || result.sourceLanguage,
     });
   } catch (error) {
     console.error('Detection error:', error);
@@ -151,7 +152,7 @@ router.get('/providers', (req: Request, res: Response) => {
         name: 'Google Translate',
         available: !!process.env.GOOGLE_TRANSLATE_API_KEY,
         characterLimit: 100000,
-        languages: translationService.getSupportedLanguages().map(l => l.code),
+        languages: translationService.getSupportedLanguages().map((l) => l.code),
       },
     ];
 

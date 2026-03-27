@@ -11,12 +11,24 @@ import { parsePageLimit, toSkipTake, buildPageResponse } from '../utils/paginati
 export async function listWebhooks(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const params = parsePageLimit(req);
-    const where  = { userId: req.userId! };
-    const select = { id: true, url: true, events: true, isActive: true, createdAt: true, updatedAt: true };
+    const where = { userId: req.userId! };
+    const select = {
+      id: true,
+      url: true,
+      events: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    };
 
     const [total, subs] = await Promise.all([
       prisma.webhookSubscription.count({ where }),
-      prisma.webhookSubscription.findMany({ where, orderBy: { createdAt: 'desc' }, select, ...toSkipTake(params) }),
+      prisma.webhookSubscription.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        select,
+        ...toSkipTake(params),
+      }),
     ]);
 
     res.json(buildPageResponse(req, subs, total, params));
@@ -49,8 +61,12 @@ export async function getWebhook(req: AuthRequest, res: Response, next: NextFunc
   try {
     const sub = await findOwned(req.params.id, req.userId!);
     res.json({
-      id: sub.id, url: sub.url, events: sub.events,
-      isActive: sub.isActive, createdAt: sub.createdAt, updatedAt: sub.updatedAt,
+      id: sub.id,
+      url: sub.url,
+      events: sub.events,
+      isActive: sub.isActive,
+      createdAt: sub.createdAt,
+      updatedAt: sub.updatedAt,
     });
   } catch (err) {
     next(err);
@@ -104,7 +120,11 @@ export async function testWebhook(req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    await dispatchEvent(eventType as any, { test: true, triggeredBy: req.userId }, 'socialflow-test');
+    await dispatchEvent(
+      eventType as any,
+      { test: true, triggeredBy: req.userId },
+      'socialflow-test',
+    );
     res.json({ message: 'Test event dispatched' });
   } catch (err) {
     next(err);
@@ -116,16 +136,26 @@ export async function listDeliveries(req: AuthRequest, res: Response, next: Next
   try {
     await findOwned(req.params.id, req.userId!);
     const params = parsePageLimit(req);
-    const where  = { subscriptionId: req.params.id };
+    const where = { subscriptionId: req.params.id };
     const select = {
-      id: true, eventType: true, status: true,
-      attempts: true, responseStatus: true, errorMessage: true,
-      createdAt: true, nextRetryAt: true,
+      id: true,
+      eventType: true,
+      status: true,
+      attempts: true,
+      responseStatus: true,
+      errorMessage: true,
+      createdAt: true,
+      nextRetryAt: true,
     };
 
     const [total, deliveries] = await Promise.all([
       prisma.webhookDelivery.count({ where }),
-      prisma.webhookDelivery.findMany({ where, orderBy: { createdAt: 'desc' }, select, ...toSkipTake(params) }),
+      prisma.webhookDelivery.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        select,
+        ...toSkipTake(params),
+      }),
     ]);
 
     res.json(buildPageResponse(req, deliveries, total, params));

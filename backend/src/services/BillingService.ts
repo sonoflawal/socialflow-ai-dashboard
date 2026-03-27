@@ -63,7 +63,7 @@ export class BillingService {
     userId: string,
     priceId: string,
     successUrl: string,
-    cancelUrl: string
+    cancelUrl: string,
   ): Promise<string> {
     const sub = SubscriptionStore.findByUserId(userId);
     if (!sub) throw new Error('User not provisioned for billing');
@@ -106,7 +106,9 @@ export class BillingService {
 
     const cost = ACTION_COST[action] ?? 1;
     if (sub.creditsRemaining < cost) {
-      throw new Error(`Insufficient credits. Required: ${cost}, available: ${sub.creditsRemaining}`);
+      throw new Error(
+        `Insufficient credits. Required: ${cost}, available: ${sub.creditsRemaining}`,
+      );
     }
 
     const newBalance = sub.creditsRemaining - cost;

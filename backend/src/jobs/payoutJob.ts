@@ -7,7 +7,15 @@ import { PayoutJobData } from '../queues/payoutQueue';
  * Handles processing payouts with retry logic and error handling
  */
 export async function processPayoutJob(job: Job<PayoutJobData>) {
-  const { groupId, amount, recipient, recipientType, currency, description, metadata } = job.data;
+  const {
+    groupId,
+    amount,
+    recipient,
+    recipientType: _recipientType,
+    currency,
+    description: _description,
+    metadata,
+  } = job.data;
 
   console.log(`[PayoutJob] Processing job ${job.id} - ${amount} ${currency} to ${recipient}`);
 
@@ -53,7 +61,9 @@ export async function processPayoutJob(job: Job<PayoutJobData>) {
     await job.updateProgress(95);
 
     // Log completion
-    console.log(`[PayoutJob] Job ${job.id} completed successfully - ${amount} ${currency} sent to ${recipient}`);
+    console.log(
+      `[PayoutJob] Job ${job.id} completed successfully - ${amount} ${currency} sent to ${recipient}`,
+    );
 
     return {
       success: true,
@@ -135,7 +145,9 @@ export async function processBatchPayoutJob(job: Job<{ payouts: PayoutJobData[] 
   const successful = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
 
-  console.log(`[BatchPayoutJob] Job ${job.id} completed: ${successful} successful (${successfulAmount}), ${failed} failed`);
+  console.log(
+    `[BatchPayoutJob] Job ${job.id} completed: ${successful} successful (${successfulAmount}), ${failed} failed`,
+  );
 
   return {
     success: true,

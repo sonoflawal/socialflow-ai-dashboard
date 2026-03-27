@@ -38,7 +38,10 @@ router.get('/callback', async (req: Request, res: Response) => {
     const tokens = await youTubeService.exchangeCode(code);
     // Trigger an immediate sync with the fresh tokens
     await enqueueYouTubeSync(tokens);
-    return res.json({ message: 'YouTube connected. Analytics sync queued.', expiresAt: tokens.expiresAt });
+    return res.json({
+      message: 'YouTube connected. Analytics sync queued.',
+      expiresAt: tokens.expiresAt,
+    });
   } catch (err) {
     logger.error('OAuth callback failed', { error: (err as Error).message });
     return res.status(500).json({ error: 'Failed to complete OAuth flow.' });
@@ -74,7 +77,10 @@ router.get('/videos/stats', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'access_token and ids query params required.' });
   }
 
-  const videoIds = (ids as string).split(',').map((id) => id.trim()).filter(Boolean);
+  const videoIds = (ids as string)
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
   try {
     const stats = await youTubeService.getVideoStats(access_token as string, videoIds);
     return res.json(stats);
