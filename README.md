@@ -343,3 +343,30 @@ test -n "$VERCEL_TOKEN" && echo "VERCEL_TOKEN set" || echo "VERCEL_TOKEN missing
 npx snyk test --severity-threshold=high --file=package-lock.json
 npx snyk test --severity-threshold=high --file=backend/package-lock.json
 ```
+
+---
+
+## Canonical Branch Strategy and Release Flow
+
+This repository uses a 3-branch promotion model:
+
+- `develop`: integration branch for active feature work.
+- `staging`: release-candidate branch and staging deployment source.
+- `main`: stable production-ready branch.
+
+### Workflow branch alignment
+
+- `.github/workflows/ci.yml`
+  - Runs on `pull_request` targeting `develop`, `staging`, `main`.
+  - Runs on `push` to `develop`, `staging`, `main`.
+- `.github/workflows/ci-cd.yaml`
+  - Runs CI on `pull_request` and `push` for `develop`, `staging`, `main`.
+  - Runs staging deployment only on push to `staging`.
+
+### Contributor release flow
+
+1. Open feature PRs into `develop`.
+2. Promote tested changes from `develop` to `staging` for release candidate validation.
+3. Promote validated `staging` changes into `main` for final release.
+
+This keeps branch behavior predictable and prevents branch-dependent CI/CD surprises.
