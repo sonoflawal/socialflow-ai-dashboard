@@ -14,7 +14,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Audit frontend dependencies
         run: npm audit --audit-level=high
@@ -23,7 +23,12 @@ jobs:
         working-directory: backend
         run: npm audit --audit-level=high
 
+      - name: Detect Snyk token availability
+        id: snyk-token
+        run: echo "available=${{ secrets.SNYK_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
       - name: Run Snyk scan (frontend)
+        if: steps.snyk-token.outputs.available == 'true'
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -31,11 +36,18 @@ jobs:
           args: --severity-threshold=high --file=package-lock.json
 
       - name: Run Snyk scan (backend)
+        if: steps.snyk-token.outputs.available == 'true'
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --file=backend/package-lock.json
+
+      - name: Snyk scan fallback notice
+        if: steps.snyk-token.outputs.available != 'true'
+        run: |
+          echo "SNYK_TOKEN is not available in this workflow context."
+          echo "Dependency audit checks still ran; Snyk steps were skipped."
 
   coverage:
     name: Test Coverage
@@ -49,8 +61,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies

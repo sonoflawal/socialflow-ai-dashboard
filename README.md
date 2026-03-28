@@ -288,3 +288,58 @@ npx jest --testPathPatterns="config/__tests__/config.test.ts" --coverage --colle
 ```
 
 The config service maintains **100% statement, branch, function, and line coverage**.
+
+---
+
+## CI/CD Secrets and Fallback Behavior
+
+These workflows reference secrets:
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/ci-cd.yaml`
+
+### Secret inventory
+
+| Secret         | Used by                             | Scope                                        | Minimum permissions                                                               | Required for                           |
+| -------------- | ----------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------- |
+| `SNYK_TOKEN`   | `ci.yml` (`security` job)           | **Repository secret**                        | Snyk API token with permission to run OSS dependency scans for this repo/org      | Snyk vulnerability scan steps          |
+| `VERCEL_TOKEN` | `ci-cd.yaml` (`deploy-staging` job) | **Environment secret** (`staging`) preferred | Vercel token with access to pull/build/deploy for the target staging project/team | Staging deploy and deploy verification |
+
+Optional/commented deploy paths in `ci-cd.yaml` reference additional secrets (`DOCKER_IMAGE_NAME`, `AWS_ROLE_ARN`, `HEROKU_API_KEY`, `HEROKU_EMAIL`) but are not currently active.
+
+### Behavior in forks / unavailable-secret contexts
+
+GitHub does not expose repository/environment secrets to workflows from untrusted fork pull requests.
+
+Current behavior:
+
+- If `SNYK_TOKEN` is unavailable, `ci.yml` prints a fallback notice and skips Snyk steps; `npm audit` checks still run.
+- If `VERCEL_TOKEN` is unavailable, `ci-cd.yaml` prints a fallback notice and skips Vercel deploy + verification.
+- Core CI checks (install, lint, tests, coverage) continue to run.
+
+### Local preflight commands (run before pushing)
+
+```bash
+# Frontend
+npm ci
+npm run lint
+npm run test:ci
+
+# Backend
+cd backend
+npm ci
+npm run lint
+npm run test:ci
+```
+
+Security/deploy tool preflight (optional, for maintainers with tokens):
+
+```bash
+# Verify secrets are set in shell
+test -n "$SNYK_TOKEN" && echo "SNYK_TOKEN set" || echo "SNYK_TOKEN missing"
+test -n "$VERCEL_TOKEN" && echo "VERCEL_TOKEN set" || echo "VERCEL_TOKEN missing"
+
+# Snyk local scan examples
+npx snyk test --severity-threshold=high --file=package-lock.json
+npx snyk test --severity-threshold=high --file=backend/package-lock.json
+```

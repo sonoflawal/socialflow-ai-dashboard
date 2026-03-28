@@ -2,9 +2,9 @@ name: Staging CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main", "develop", "staging" ]
+    branches: ["main", "develop", "staging"]
   pull_request:
-    branches: [ "main", "develop", "staging" ]
+    branches: ["main", "develop", "staging"]
 
 jobs:
   ci:
@@ -12,19 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          
+          node-version: "20"
+          cache: "npm"
+
       - name: Install Dependencies
         run: npm ci
-        
+
       - name: Lint
         run: npm run lint
-        
+
       - name: Test
         run: npm run test:ci || echo "Tests passed or ignored for demo"
 
@@ -34,26 +34,37 @@ jobs:
     if: github.ref == 'refs/heads/staging' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     # Using 'environment' for secure secret management and approval gates
-    environment: 
+    environment:
       name: staging
       url: ${{ steps.deploy.outputs.DEPLOY_URL }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          
+          node-version: "20"
+
+      - name: Detect Vercel token availability
+        id: vercel-token
+        run: echo "available=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
       # OPTION 1: VERCEL (Zero-Downtime by Immutable Deployments)
       - name: Deploy to Vercel
         id: deploy
+        if: steps.vercel-token.outputs.available == 'true'
         run: |
           npm install --global vercel@latest
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --token=${{ secrets.VERCEL_TOKEN }}
           DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      - name: Deployment fallback notice
+        if: steps.vercel-token.outputs.available != 'true'
+        run: |
+          echo "VERCEL_TOKEN is not available in this workflow context."
+          echo "Staging deploy was intentionally skipped."
 
       # OPTION 2: AWS APP RUNNER (Rolling Updates by default)
       # - name: Deploy to AWS App Runner
@@ -74,6 +85,7 @@ jobs:
       #     heroku_email: ${{ secrets.HEROKU_EMAIL }}
 
       - name: Verify Staging Deployment
+        if: steps.vercel-token.outputs.available == 'true'
         run: |
           echo "Deployment successful: ${{ steps.deploy.outputs.DEPLOY_URL }}"
           # Verification step: Health check (timeout after 5m)
