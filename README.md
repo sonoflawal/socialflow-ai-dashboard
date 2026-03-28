@@ -258,6 +258,25 @@ Use that matrix as the source of truth for whether each platform capability is *
 
 ---
 
+## Data Retention and Pruning Policy
+
+Retention is enforced by the backend data pruning service and scheduler.
+
+- **Targets:** log files and analytics files.
+- **Default windows:** logs = `30` days, analytics = `90` days.
+- **Default paths:** `logs` and `data/analytics` (override via `DATA_RETENTION_LOG_PATHS`, `DATA_RETENTION_ANALYTICS_PATHS`).
+- **Modes:**
+  - `archive` (default): moves eligible files into `DATA_RETENTION_ARCHIVE_DIR` under category folders.
+  - `delete`: permanently removes eligible files.
+
+Safe validation should start with `DATA_RETENTION_MODE=archive` and `DATA_PRUNING_ENABLED=false`, then run a manual pruning cycle against sandbox path targets before enabling schedule-based runs.
+
+Full end-to-end runbook (targets, defaults, operational expectations, dry-run workflow, rollback/recovery):
+
+- `backend/docs/retention-pruning-policy.md`
+
+---
+
 ## Running tests
 
 ```bash
