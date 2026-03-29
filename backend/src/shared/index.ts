@@ -25,7 +25,7 @@ export * from './config/tts.config';
 export * from './config/video.config';
 
 // Shared types
-export * from './types/translation';
+export * from '@socialflow/shared';
 export * from './types/video';
 export * from './types/circuitBreaker';
 export * from './types/tts';

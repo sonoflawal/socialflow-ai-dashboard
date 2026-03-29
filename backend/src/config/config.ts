@@ -9,7 +9,8 @@ const envSchema = z.object({
   BACKEND_PORT: z.coerce.number().int().positive().default(3001),
 
   // ── Database ──────────────────────────────────────────────────────────────
-  DATABASE_URL: z.url('DATABASE_URL must be a valid URL'),
+  DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
+  DATABASE_REPLICA_URL: z.string().url('DATABASE_REPLICA_URL must be a valid URL').optional(),
   // Connection pool — defaults tuned per environment in src/lib/prisma.ts
   // Override here to hard-pin values regardless of NODE_ENV.
   DB_CONNECTION_LIMIT: z.coerce.number().int().positive().optional(),
@@ -94,6 +95,8 @@ const envSchema = z.object({
   DATA_PRUNING_CRON: z.string().default('0 2 * * *'),
   DATA_RETENTION_LOG_DAYS: z.coerce.number().int().positive().default(30),
   DATA_RETENTION_ANALYTICS_DAYS: z.coerce.number().int().positive().default(90),
+  DATA_RETENTION_MISSING_PATH_POLICY: z.enum(['warn', 'fail', 'ignore']).default('warn'),
+  DATA_RETENTION_MISSING_PATH_ALERT_THRESHOLD: z.coerce.number().int().nonnegative().default(3),
 
   // ── Worker Monitor ────────────────────────────────────────────────────────
   WORKER_MONITOR_INTERVAL_MS: z.coerce.number().default(30000),

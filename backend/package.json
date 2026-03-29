@@ -23,6 +23,7 @@
     "format": "prettier --write 'src/**/*.ts'"
   },
   "dependencies": {
+    "@socialflow/shared": "*",
     "@apollo/server": "^5.5.0",
     "@as-integrations/express4": "^1.1.2",
     "@as-integrations/express5": "^1.1.2",

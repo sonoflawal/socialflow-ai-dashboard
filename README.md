@@ -66,6 +66,8 @@ DB_POOL_TIMEOUT=30       # seconds to wait for a free connection before erroring
 | `DATA_PRUNING_CRON`             | `0 2 * * *`                         | Cron schedule for data pruning                                           |
 | `DATA_RETENTION_LOG_DAYS`       | `30`                                | Log retention in days                                                    |
 | `DATA_RETENTION_ANALYTICS_DAYS` | `90`                                | Analytics retention in days                                              |
+| `DATA_RETENTION_MISSING_PATH_POLICY` | `warn`                         | What to do when a retention path is missing: `warn` \| `fail` \| `ignore` |
+| `DATA_RETENTION_MISSING_PATH_ALERT_THRESHOLD` | `3`               | Fire an alert when missing-path count reaches this value in a single run |
 
 ### Social / third-party integrations (all optional)
 
@@ -253,6 +255,14 @@ A successful restore with matching row counts confirms the backup is usable.
 Current platform-by-capability implementation status for analytics integrations is tracked in:
 
 - `backend/docs/analytics-integration-status.md`
+
+**All logic for data retention is located in `backend/src/services/DataRetentionService.ts`.**
+
+---
+
+## Security
+
+Please report any security vulnerabilities by following our [Security Policy](./SECURITY.md).
 
 Use that matrix as the source of truth for whether each platform capability is **implemented**, **partial**, or **planned**, including owner paths and roadmap links.
 
