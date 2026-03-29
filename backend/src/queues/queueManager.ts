@@ -394,3 +394,11 @@ export const queueManager = new QueueManager();
 
 // Export connection config for direct access if needed
 export { connection as redisConnection };
+
+/**
+ * Closes the standalone redisClient connection.
+ * Call this during graceful shutdown after queueManager.closeAll().
+ */
+export async function closeRedisClient(): Promise<void> {
+  await redisClient.quit();
+}

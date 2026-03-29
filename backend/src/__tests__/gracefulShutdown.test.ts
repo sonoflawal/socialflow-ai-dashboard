@@ -33,6 +33,7 @@ jest.mock('../jobs/youtubeSyncJob', () => ({
 }));
 jest.mock('../queues/queueManager', () => ({
   queueManager: { closeAll: jest.fn().mockResolvedValue(undefined) },
+  closeRedisClient: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('../jobs/workers', () => ({ initializeWorkers: jest.fn() }));
 jest.mock('../workers/index', () => ({ startWorkers: jest.fn() }));
@@ -56,7 +57,7 @@ import { stopWorkerMonitor } from '../monitoring/workerMonitorInstance';
 import { stopHealthMonitoringJob } from '../jobs/healthMonitoringJob';
 import { stopDataPruningJob } from '../jobs/dataPruningJob';
 import { stopYouTubeSyncJob } from '../jobs/youtubeSyncJob';
-import { queueManager } from '../queues/queueManager';
+import { queueManager, closeRedisClient } from '../queues/queueManager';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -144,7 +145,19 @@ describe('gracefulShutdown — success path', () => {
     expect(stopDataPruningJob).toHaveBeenCalled();
     expect(stopYouTubeSyncJob).toHaveBeenCalled();
     expect(queueManager.closeAll).toHaveBeenCalled();
+    expect(closeRedisClient).toHaveBeenCalled();
     expect(prisma.$disconnect).toHaveBeenCalled();
+  });
+
+  it('calls closeRedisClient after queueManager.closeAll', async () => {
+    const order: string[] = [];
+    (queueManager.closeAll as jest.Mock).mockImplementation(async () => { order.push('closeAll'); });
+    (closeRedisClient as jest.Mock).mockImplementation(async () => { order.push('closeRedisClient'); });
+
+    const exit = jest.fn();
+    await gracefulShutdown('SIGTERM', 0, makeDeps(), { exit, timeoutMs: 5000 });
+
+    expect(order.indexOf('closeAll')).toBeLessThan(order.indexOf('closeRedisClient'));
   });
 
   it('skips HTTP server close when server is null', async () => {
@@ -218,6 +231,14 @@ describe('gracefulShutdown — cleanup resilience', () => {
 
   it('continues shutdown and calls exit(0) even if queueManager.closeAll throws', async () => {
     (queueManager.closeAll as jest.Mock).mockRejectedValueOnce(new Error('queue error'));
+    const exit = jest.fn();
+    await gracefulShutdown('SIGTERM', 0, makeDeps(), { exit, timeoutMs: 5000 });
+    expect(exit).toHaveBeenCalledWith(0);
+    expect(prisma.$disconnect).toHaveBeenCalled();
+  });
+
+  it('continues shutdown and calls exit(0) even if closeRedisClient throws', async () => {
+    (closeRedisClient as jest.Mock).mockRejectedValueOnce(new Error('redis quit error'));
     const exit = jest.fn();
     await gracefulShutdown('SIGTERM', 0, makeDeps(), { exit, timeoutMs: 5000 });
     expect(exit).toHaveBeenCalledWith(0);

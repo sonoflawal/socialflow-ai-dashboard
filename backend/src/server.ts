@@ -5,7 +5,7 @@ import app, { apolloReady } from './app';
 import { SocketService } from './services/SocketService';
 import { initializeWorkers } from './jobs/workers';
 import { startWorkers } from './workers/index';
-import { queueManager } from './queues/queueManager';
+import { queueManager, closeRedisClient } from './queues/queueManager';
 import { startDataPruningJob, stopDataPruningJob } from './jobs/dataPruningJob';
 import { startYouTubeSyncJob, stopYouTubeSyncJob } from './jobs/youtubeSyncJob';
 import { startTikTokVideoWorker } from './jobs/tiktokVideoJob';
@@ -149,6 +149,16 @@ export const gracefulShutdown = async (
       logger.info('All queues and workers closed successfully');
     } catch (error) {
       logger.error('Failed to close queues', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    // Close standalone Redis client
+    try {
+      await closeRedisClient();
+      logger.info('Redis client closed');
+    } catch (error) {
+      logger.error('Failed to close Redis client', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
