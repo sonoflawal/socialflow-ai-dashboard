@@ -30,6 +30,7 @@ import twitterWebhookRoutes from '../twitter-webhook';
 import youtubeRoutes      from '../youtube';
 import linkedInRoutes     from '../linkedin';
 import searchRoutes       from '../search';
+import predictiveRoutes   from '../predictive';
 
 const router = Router();
 
@@ -79,5 +80,6 @@ router.use('/webhooks/twitter', twitterWebhookRoutes);
 router.use('/youtube',       generalLimiter, youtubeRoutes);
 router.use('/linkedin',      generalLimiter, linkedInRoutes);
 router.use('/search',        generalLimiter, searchRoutes);
+router.use('/predictive',    generalLimiter, predictiveRoutes);
 
 export default router;
