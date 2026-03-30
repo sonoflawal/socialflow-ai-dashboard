@@ -62,6 +62,16 @@ patches:
         name: socialflow-backend
       spec:
         minAvailable: 2
+  # Extend grace period to 90 s in prod to cover longer queue drain times
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: socialflow-backend
+      spec:
+        template:
+          spec:
+            terminationGracePeriodSeconds: 90
   # Prod hostname + TLS
   - patch: |-
       apiVersion: networking.k8s.io/v1
